@@ -56,7 +56,7 @@ var init = () => {
 
     }    
     // q2
-
+    
     {
         let getDesc = (level) => "q_2=2^{" + level + "}";
         let getInfo = (level) => "q_2=" + getQ2(level).toString(0);
@@ -67,16 +67,17 @@ var init = () => {
         q2.isAvailable = false
     }
     // p
+    
     {
         let getDesc = (level) => "p={" + getP(level).toFixed(2) + "}";
-        let getInfo = (level) => "p=" + getP(level).toString(0);
+        let getInfo = (level) => "p=" + getP(level).toFixed(2);
         p = theory.createUpgrade(4, currency, new ExponentialCost(1, 2));
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
         p.boughtOrRefunded = (_) => resetToPIMult();
     }
-
     // c1
+    
     {
         let getDesc = (level) => "c_1=" + getC1(level).toString(0);
         c1 = theory.createUpgrade(2, currency, new ExponentialCost(1, Math.log10(5)));
@@ -95,7 +96,6 @@ var init = () => {
         c2.getInfo = (amount) => Utils.getMathTo(getInfo(c2.level), getInfo(c2.level + amount));
         c2.boughtOrRefunded = (_) => resetToPIMult();
     }
-
 
     /////////////////////
     // Permanent Upgrades
@@ -165,10 +165,10 @@ var tick = (elapsedTime, multiplier) => {
     currency.value += dt * 
         bonus * 
         q *
-        (getF(f.level) + 
-        getC1(c1.level) *
-        getC2(c2.level)) *
-        (Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
+        //(getF(f.level) + 
+        //getC1(c1.level) *
+        //getC2(c2.level)) *
+        //(Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
         Math.cos(t);// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     t += dts[dtMilestone.level];
     q += (getQ1(q1.level) * getQ2(q2.level)) / 1e3
