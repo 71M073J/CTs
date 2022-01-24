@@ -80,7 +80,7 @@ var init = () => {
     
     {
         let getDesc = (level) => "c_1=" + getC1(level).toString(0);
-        c1 = theory.createUpgrade(2, currency, new ExponentialCost(1, Math.log10(5)));
+        c1 = theory.createUpgrade(2, currency, new ExponentialCost(1, Math.log10(3)));
         c1.getDescription = (_) => Utils.getMath(getDesc(c1.level));
         c1.getInfo = (amount) => Utils.getMathTo(getDesc(c1.level), getDesc(c1.level + amount));
         c1.boughtOrRefunded = (_) => resetToPIMult();
