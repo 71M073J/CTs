@@ -114,7 +114,7 @@ var init = () => {
     {
         p3 = theory.createAutoBuyerUpgrade(2, currency, 1e15);//1e15
         p3.boughtOrRefunded = (_) => resetToPIMult();
-        theory.autoBuyerUpgrade.isAvailable
+        //theory.autoBuyerUpgrade.isAvailable
     }
     {
         unbreak = theory.createPermanentUpgrade(666, currency, new ConstantCost(0));
