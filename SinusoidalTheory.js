@@ -154,7 +154,6 @@ var init = () => {
     //// Achievements
     //achievement1 = theory.createAchievement(0, "Achievement 1", "Description 1", () => c1.level > 1);
     //achievement2 = theory.createSecretAchievement(1, "Achievement 2", "Description 2", "Maybe you should buy two levels of c2?", () => c2.level > 1);
-    theory.buy
     updateAvailability();
 }
 
@@ -245,7 +244,6 @@ var getSecondaryEquation = () => {
 var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
 var getPublicationMultiplier = (tau) => tau.pow(0.2);
 var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.2}";
-var getMilestone
 var getTau = () => currency.value;
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000
