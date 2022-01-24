@@ -28,6 +28,9 @@ var init = () => {
     max = (a,b) => {
         if (a > b){return a} else {return b}
     };
+    min = (a,b) => {
+        if (a < b){return a} else {return b}
+    };
     resetToPIMult = () => {
         t = max(t - (t % (2 * Math.PI)), maxt);
         if(t > maxt){
@@ -92,7 +95,7 @@ var init = () => {
     {
         let getDesc = (level) => "c_2=2^{" + level + "}";
         let getInfo = (level) => "c_2=" + getC2(level).toString(0);
-        c2 = theory.createUpgrade(3, currency, new ExponentialCost(50, 2));
+        c2 = theory.createUpgrade(3, currency, new ExponentialCost(50, Math.sqrt(5)));
         c2.getDescription = (_) => Utils.getMath(getDesc(c2.level));
         c2.getInfo = (amount) => Utils.getMathTo(getInfo(c2.level), getInfo(c2.level + amount));
         c2.boughtOrRefunded = (_) => resetToPIMult();
@@ -109,8 +112,9 @@ var init = () => {
         p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
-        p3 = theory.createAutoBuyerUpgrade(2, currency, 1e15);
+        p3 = theory.createAutoBuyerUpgrade(2, currency, 0);//1e15
         p3.boughtOrRefunded = (_) => resetToPIMult();
+        theory.autoBuyerUpgrade.isAvailable
     }
     {
         unbreak = theory.createPermanentUpgrade(666, currency, new ConstantCost(0));
@@ -150,7 +154,7 @@ var init = () => {
     //// Achievements
     //achievement1 = theory.createAchievement(0, "Achievement 1", "Description 1", () => c1.level > 1);
     //achievement2 = theory.createSecretAchievement(1, "Achievement 2", "Description 2", "Maybe you should buy two levels of c2?", () => c2.level > 1);
-
+    theory.buy
     updateAvailability();
 }
 
@@ -169,18 +173,24 @@ var tick = (elapsedTime, multiplier) => {
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
-        (t.pow((dtMilestone.level + 1) *  getP(p.level).sqrt()) /  (100*dts[dtMilestone.level])) *
+        (t.pow((dtMilestone.level + 1) * getP(p.level).sqrt()) /  (100*dts[dtMilestone.level])) *
         Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
-        //TODO t and q multipliers for elapsed time somehow calculate actual dt given the amount of upgrades
-        //idk if i want to do taht q.q
-    if(game.isCalculatingOfflineProgress){
-        t += dts[dtMilestone.level] * (elapsedTime * 5);
-    }else{
-        t += dts[dtMilestone.level] * (elapsedTime * 10);;
-    }
+    
+    
+    t += dts[dtMilestone.level]
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
 
     if(elapsedTime > 0.2){
+            
+        if(game.isCalculatingOfflineProgress){
+            //beginning time until t=100 : 2min 25s /
+            //t = 1000 until t = 1100: 2 min /
+            //TODO t multiplier for elapsed time somehow calculate actual dt given the amount of upgrades, i.e. does t increase at all
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+            t += dts[dtMilestone.level] * (elapsedTime) * min(currency.value.abs()/theory.tau, BigNumber.ONE)* 7;
+        }else{
+            t += dts[dtMilestone.level] * (elapsedTime) * min(currency.value.abs()/theory.tau, BigNumber.ONE)* 7;
+        }
         resetToPIMult();
         t += Math.PI;
         currency.value = BigNumber.ZERO;
@@ -233,8 +243,8 @@ var getSecondaryEquation = () => {
     return result
 }
 var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
-var getPublicationMultiplier = (tau) => tau.pow(0.22) / BigNumber.THREE;
-var getPublicationMultiplierFormula = (symbol) => "\\frac{{" + symbol + "}^{0.164}}{3}";
+var getPublicationMultiplier = (tau) => tau.pow(0.2);
+var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.2}";
 var getMilestone
 var getTau = () => currency.value;
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
