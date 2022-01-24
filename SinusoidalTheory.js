@@ -105,11 +105,11 @@ var init = () => {
     }
     {
         p2 = theory.createBuyAllUpgrade(1, currency, 1e8);
-        p1.boughtOrRefunded = (_) => resetToPIMult();
+        p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
         p3 = theory.createAutoBuyerUpgrade(2, currency, 1e13);
-        p1.boughtOrRefunded = (_) => resetToPIMult();
+        p3.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
         unbreak = theory.createPermanentUpgrade(666, currency, new ConstantCost(0));
@@ -150,7 +150,7 @@ var init = () => {
     //achievement1 = theory.createAchievement(0, "Achievement 1", "Description 1", () => c1.level > 1);
     //achievement2 = theory.createSecretAchievement(1, "Achievement 2", "Description 2", "Maybe you should buy two levels of c2?", () => c2.level > 1);
 
-    //updateAvailability();
+    updateAvailability();
 }
 
 var updateAvailability = () => {
@@ -165,10 +165,10 @@ var tick = (elapsedTime, multiplier) => {
     currency.value += dt * 
         bonus * 
         q *
-        //(getF(f.level) + 
-        //getC1(c1.level) *
-        //getC2(c2.level)) *
-        //(Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
+        (getF(f.level) + 
+        getC1(c1.level) *
+        getC2(c2.level)) *
+        (Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
         Math.cos(t);// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     t += dts[dtMilestone.level];
     q += (getQ1(q1.level) * getQ2(q2.level)) / 1e3
@@ -191,7 +191,7 @@ var getPrimaryEquation = () => {
     result += "^{p}"
     result += "}{100dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
-    result += "\\sin{(t)}"
+    result += "\\cos{(t)}"
     
     return result;
 }
