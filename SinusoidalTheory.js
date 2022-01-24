@@ -8,7 +8,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 1.3;
+var version = 1.4;
 
 var currency;
 var t = 0.0;
@@ -100,15 +100,15 @@ var init = () => {
     /////////////////////
     // Permanent Upgrades
     {
-        p1 = theory.createPublicationUpgrade(0, currency, 1e10);
+        p1 = theory.createPublicationUpgrade(0, currency, 1e9);
         p1.boughtOrRefunded = (_) => {resetToPIMult();};
     }
     {
-        p2 = theory.createBuyAllUpgrade(1, currency, 1e8);
+        p2 = theory.createBuyAllUpgrade(1, currency, 1e6);
         p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
-        p3 = theory.createAutoBuyerUpgrade(2, currency, 1e13);
+        p3 = theory.createAutoBuyerUpgrade(2, currency, 1e15);
         p3.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
@@ -170,8 +170,8 @@ var tick = (elapsedTime, multiplier) => {
         getC2(c2.level)) *
         (Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
         Math.cos(t);// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
-    t += dts[dtMilestone.level];
-    q += (getQ1(q1.level) * getQ2(q2.level)) / 1e3
+    t += dts[dtMilestone.level] * (elapsedTime * 10);
+    q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
     theory.invalidateSecondaryEquation();
 }
 
@@ -219,7 +219,7 @@ var getSecondaryEquation = () => {
     return result
 }
 var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
-var getPublicationMultiplier = (tau) => tau.pow(0.164) / BigNumber.THREE;
+var getPublicationMultiplier = (tau) => tau.pow(0.25) / BigNumber.THREE;
 var getPublicationMultiplierFormula = (symbol) => "\\frac{{" + symbol + "}^{0.164}}{3}";
 var getMilestone
 var getTau = () => currency.value;
@@ -242,8 +242,8 @@ var setInternalState = (state) => { //set the internal state of values that need
 }
 
 var getInternalState = () => {
-    resetToPIMult();
-    currency.value = 0;
+    //resetToPIMult();
+    //currency.value = 0;
     return `${t} ${q}`// ${currency.value}` //return the data saved 
 }
 init();
