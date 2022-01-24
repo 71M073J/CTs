@@ -112,7 +112,7 @@ var init = () => {
         p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
-        p3 = theory.createAutoBuyerUpgrade(2, currency, 0);//1e15
+        p3 = theory.createAutoBuyerUpgrade(2, currency, 1e15);//1e15
         p3.boughtOrRefunded = (_) => resetToPIMult();
         theory.autoBuyerUpgrade.isAvailable
     }
