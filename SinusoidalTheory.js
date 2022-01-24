@@ -1,28 +1,29 @@
 ﻿﻿import { ConstantCost, Cost, CustomCost, ExponentialCost, FreeCost, LinearCost, StepwiseCost } from "./api/Costs";
 import { Localization } from "./api/Localization";
-import { BigNumber } from "./api/BigNumber";
+import { BigNumber, parseBigNumber } from "./api/BigNumber";
 import { theory } from "./api/Theory";
 import { Utils } from "./api/Utils";
+import { game, Game } from "./api/Game"
 
 var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 1.4;
+var version = 1.5;
 
+var lastTick = false;
 var currency;
-var t = 0.0;
-var f, c1, c2, q, q1, p, dt, unbreak;
+var f, t, c1, c2, q, q1, p, dt, unbreak;
 var dtMilestone, c1Exp, c2Exp;
-var dts = [0.1, 0.05, 0.025]
+var dts = [0.1, 0.025, 0.0125];
 var achievement1, achievement2;
 //var chapter1, chapter2;
 var maxt;
 var init = () => {
     currency = theory.createCurrency();
     //currency2 = theory.createCurrency();
-    t = 0.0;
-    maxt = 0.0;
+    t = BigNumber.ZERO;
+    maxt = BigNumber.ZERO;
     q = BigNumber.ONE;
     max = (a,b) => {
         if (a > b){return a} else {return b}
@@ -48,7 +49,7 @@ var init = () => {
     {
         let getDesc = (level) => "q_1={" + level + "}";
         let getInfo = (level) => "q_1=" + getQ1(level).toString(0);
-        q1 = theory.createUpgrade(1, currency, new ExponentialCost(1e2, Math.sqrt(2)));
+        q1 = theory.createUpgrade(1, currency, new ExponentialCost(1e2, Math.sqrt(3)));
         q1.getDescription = (_) => Utils.getMath(getDesc(q1.level));
         q1.getInfo = (amount) => Utils.getMathTo(getInfo(q1.level), getInfo(q1.level + amount));
         q1.boughtOrRefunded = (_) => resetToPIMult();
@@ -60,7 +61,7 @@ var init = () => {
     {
         let getDesc = (level) => "q_2=2^{" + level + "}";
         let getInfo = (level) => "q_2=" + getQ2(level).toString(0);
-        q2 = theory.createUpgrade(5, currency, new ExponentialCost(1e15, 20));
+        q2 = theory.createUpgrade(1e5, currency, new ExponentialCost(1e15, 50));
         q2.getDescription = (_) => Utils.getMath(getDesc(q2.level));
         q2.getInfo = (amount) => Utils.getMathTo(getInfo(q2.level), getInfo(q2.level + amount));
         q2.boughtOrRefunded = (_) => resetToPIMult();
@@ -69,8 +70,8 @@ var init = () => {
     // p
     
     {
-        let getDesc = (level) => "p={" + getP(level).toFixed(2) + "}";
-        let getInfo = (level) => "p=" + getP(level).toFixed(2);
+        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}";
+        let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2);
         p = theory.createUpgrade(4, currency, new ExponentialCost(1, 2));
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
@@ -100,7 +101,7 @@ var init = () => {
     /////////////////////
     // Permanent Upgrades
     {
-        p1 = theory.createPublicationUpgrade(0, currency, 1e9);
+        p1 = theory.createPublicationUpgrade(0, currency, 1e10);
         p1.boughtOrRefunded = (_) => {resetToPIMult();};
     }
     {
@@ -125,9 +126,9 @@ var init = () => {
 
     {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
-        dtMilestone.description = Localization.getUpgradeMultCustomDesc("dt", "0.5") + " " + Localization.getUpgradeMultCustomDesc("p", "+1");
-        dtMilestone.info = Localization.getUpgradeMultCustomInfo("dt", "0.5") + " " + Localization.getUpgradeMultCustomInfo("p", "+1");
-        dtMilestone.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); t = Math.sqrt(t)};
+        dtMilestone.description = Localization.getUpgradeMultCustomDesc("dt", "0.25") + " " + Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = sqrt(t)";
+        dtMilestone.info = Localization.getUpgradeMultCustomInfo("dt", "0.25") + " " + Localization.getUpgradeMultCustomInfo("p", "+1") + ", t = sqrt(t)";
+        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); t = t.sqrt(); maxt = t; resetToPIMult();};
         dtMilestone.isAvailable = true;
     }
     
@@ -135,14 +136,14 @@ var init = () => {
         qMilestone = theory.createMilestoneUpgrade(1, 1);
         qMilestone.description = Localization.getUpgradeUnlockDesc("q_1");
         qMilestone.info = Localization.getUpgradeUnlockInfo("q_2");
-        qMilestone.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
+        qMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
     }
     
     {
         qMilestone2 = theory.createMilestoneUpgrade(2, 1);
         qMilestone2.description = Localization.getUpgradeUnlockDesc("q_2");
         qMilestone2.info = Localization.getUpgradeUnlockInfo("q_2");
-        qMilestone2.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
+        qMilestone2.bought = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
     }
     
     /////////////////
@@ -168,10 +169,23 @@ var tick = (elapsedTime, multiplier) => {
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
-        (Math.pow(t, (dtMilestone.level + 1) *  getP(p.level)) /  (100*dts[dtMilestone.level])) *
-        Math.cos(t);// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
-    t += dts[dtMilestone.level] * (elapsedTime * 10);
+        (t.pow((dtMilestone.level + 1) *  getP(p.level).sqrt()) /  (100*dts[dtMilestone.level])) *
+        Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
+        //TODO t and q multipliers for elapsed time somehow calculate actual dt given the amount of upgrades
+        //idk if i want to do taht q.q
+    if(game.isCalculatingOfflineProgress){
+        t += dts[dtMilestone.level] * (elapsedTime * 5);
+    }else{
+        t += dts[dtMilestone.level] * (elapsedTime * 10);;
+    }
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
+
+    if(elapsedTime > 0.2){
+        resetToPIMult();
+        t += Math.PI;
+        currency.value = BigNumber.ZERO;
+    }
+    
     theory.invalidateSecondaryEquation();
 }
 
@@ -187,7 +201,7 @@ var getPrimaryEquation = () => {
     //if (c2Exp.level == 1) result += "^{0.05}";
     //if (c2Exp.level == 2) result += "^{0.1}";
     //if (c2Exp.level == 3) result += "^{0.15}";
-    result += dtMilestone.level < 1 ? "\\frac{t" : "\\frac{t^" + (dtMilestone.level + 1)
+    result += dtMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (dtMilestone.level + 1) + "}}"
     result += "^{p}"
     result += "}{100dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
@@ -197,14 +211,14 @@ var getPrimaryEquation = () => {
 }
 
 var postPublish = () => {
-    t = 0.0;
-    maxt = 0.0;
+    t = BigNumber.ZERO;
+    maxt = BigNumber.ZERO;
     q = BigNumber.ONE;
 }
 var getSecondaryEquation = () => {
     
     let result = "\\begin{matrix}";
-    result += "t={" + t.toFixed(2) + "}";
+    result += "t={" + t.toNumber().toFixed(2) + "}";
     result += "\\ ";
     result += "dt=" + dts[dtMilestone.level];
     if(qMilestone.level > 0){
@@ -213,13 +227,13 @@ var getSecondaryEquation = () => {
         result += "\\ ";
         result += "\\dot q={q_1" 
         result += qMilestone2.level > 0 ? "q_2" : ""
-        result += "}/1000";
+        result += "}/1e3";
     }
     result += "\\end{matrix}";
     return result
 }
 var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
-var getPublicationMultiplier = (tau) => tau.pow(0.25) / BigNumber.THREE;
+var getPublicationMultiplier = (tau) => tau.pow(0.22) / BigNumber.THREE;
 var getPublicationMultiplierFormula = (symbol) => "\\frac{{" + symbol + "}^{0.164}}{3}";
 var getMilestone
 var getTau = () => currency.value;
@@ -230,13 +244,13 @@ var getC2 = (level) => BigNumber.TWO.pow(level);
 var getdt = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => BigNumber.from(level);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
-var getP = (level) => 1 + (level / 100) 
+var getP = (level) => BigNumber.from(1 + (level / 100)) 
 var getC1Exponent = (level) => BigNumber.from(1 + 0.05 * level);
 var getC2Exponent = (level) => BigNumber.from(1 + 0.05 * level);
 //if you just need to serialise "t", here's an example: quoth philles gillipe
 var setInternalState = (state) => { //set the internal state of values that need to be kept post switch that aren't levels
     let values = state.split(" "); //save values to a string
-    if (values.length > 0) t = parseFloat(values[0]);
+    if (values.length > 0) t = parseBigNumber(values[0]);
     if (values.length > 1) q = parseBigNumber(values[1]);
     //if (values.length > 2) currency.value = parseBigNumber(values[2]);
 }
