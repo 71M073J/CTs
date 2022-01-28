@@ -9,13 +9,13 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 1.5;
+var version = 1.7;
 
-var lastTick = false;
+var lastTickWasAFK = false;
 var currency;
 var f, t, c1, c2, q, q1, p, dt, unbreak;
 var dtMilestone, c1Exp, c2Exp;
-var dts = [0.1, 0.025, 0.0125];
+var dts = [0.1, 0.025, 6.25e-3];
 var achievement1, achievement2;
 //var chapter1, chapter2;
 var maxt;
@@ -37,6 +37,8 @@ var init = () => {
             maxt = t;
         }
     };
+    theory.primaryEquationHeight = 50;
+    theory.secondaryEquationHeight = 40;
     ///////////////////
     // Regular Upgrades
     //f, free upgrade
@@ -104,63 +106,58 @@ var init = () => {
     /////////////////////
     // Permanent Upgrades
     {
-        p1 = theory.createPublicationUpgrade(0, currency, 1e10);
+        p1 = theory.createPublicationUpgrade(0, currency, 1e10);//1e10
         p1.boughtOrRefunded = (_) => {resetToPIMult();};
     }
     {
-        p2 = theory.createBuyAllUpgrade(1, currency, 1e6);
+        p2 = theory.createBuyAllUpgrade(1, currency, 1e6);//1e6
         p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
         p3 = theory.createAutoBuyerUpgrade(2, currency, 1e15);//1e15
         p3.boughtOrRefunded = (_) => resetToPIMult();
-        //theory.autoBuyerUpgrade.isAvailable
     }
-    {
+    /*{
         unbreak = theory.createPermanentUpgrade(666, currency, new ConstantCost(0));
         unbreak.getDescription = (_) => "Unfucks the gamestate, if stuck negative"
         unbreak.getInfo = (_) => "Unfucks the gamestate, if stuck negative"
         unbreak.boughtOrRefunded = (_) => {resetToPIMult(); t += Math.PI; currency.value = BigNumber.ZERO;}
-    }
+    }*/
     ///////////////////////
     //// Milestone Upgrades
-    // TODO make q variable a milestone 
     theory.setMilestoneCost(new LinearCost(25, 25));
-    //theory.setMilestoneCost(new LinearCost(0, 0));
 
+    //dt milestone
     {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
-        dtMilestone.description = Localization.getUpgradeMultCustomDesc("dt", "0.25") + " " + Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.info = Localization.getUpgradeMultCustomInfo("dt", "0.25") + " " + Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
+        dtMilestone.description = Localization.getUpgradeMultCustomDesc("dt", "0.25") + " " + Localization.getUpgradeMultCustomDesc("p", "\\sqrt{+1}") + ", t = sqrt(t)";
+        dtMilestone.info = Localization.getUpgradeMultCustomInfo("dt", "0.25") + " " + Localization.getUpgradeMultCustomInfo("p", "\\sqrt{+1}") + ", t = sqrt(t)";
         dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); t = t.sqrt(); maxt = t; resetToPIMult();};
         dtMilestone.isAvailable = true;
     }
-    
+    //q milestone
     {
-        qMilestone = theory.createMilestoneUpgrade(1, 1);
-        qMilestone.description = Localization.getUpgradeUnlockDesc("q_1");
-        qMilestone.info = Localization.getUpgradeUnlockInfo("q_2");
-        qMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
+        qMilestone = theory.createMilestoneUpgrade(1, 2);
+        qMilestone.description = Localization.getUpgradeUnlockDesc(qMilestone.level == 0 ? "q_1" : "q_2");
+        qMilestone.info = Localization.getUpgradeUnlockInfo(qMilestone.level == 0 ? "q_1" : "q_2");
+        qMilestone.boughtOrRefunded = (_) => {
+            theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();
+            qMilestone.description = Localization.getUpgradeUnlockDesc(qMilestone.level == 0 ? "q_1" : "q_2");
+            qMilestone.info = Localization.getUpgradeUnlockInfo(qMilestone.level == 0 ? "q_1" : "q_2");
+        }
     }
-    
-    {
-        qMilestone2 = theory.createMilestoneUpgrade(2, 1);
-        qMilestone2.description = Localization.getUpgradeUnlockDesc("q_2");
-        qMilestone2.info = Localization.getUpgradeUnlockInfo("q_2");
-        qMilestone2.bought = (_) => {theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();}
-    }
-    
+    //TODO q power exponent i.e. q˘1.15nshiet
     /////////////////
     //// Achievements
+    //TODO some time in the future
     //achievement1 = theory.createAchievement(0, "Achievement 1", "Description 1", () => c1.level > 1);
     //achievement2 = theory.createSecretAchievement(1, "Achievement 2", "Description 2", "Maybe you should buy two levels of c2?", () => c2.level > 1);
     updateAvailability();
 }
 
 var updateAvailability = () => {
-    qMilestone2.isAvailable = qMilestone.level > 0;
     q1.isAvailable = qMilestone.level > 0;
-    q2.isAvailable = qMilestone2.level > 0;
+    q2.isAvailable = qMilestone.level > 1;
 }
 
 var tick = (elapsedTime, multiplier) => {
@@ -168,33 +165,51 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
         bonus * 
-        q *
+        (qMilestone.level > 0 ? q : 1) *
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
-        (t.pow((dtMilestone.level + 1) * getP(p.level).sqrt()) /  (100*dts[dtMilestone.level])) *
+        (t.pow(Math.sqrt((dtMilestone.level + 1)) * getP(p.level)) /  (100*dts[dtMilestone.level])) *
         Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     
     
-    t += dts[dtMilestone.level]
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
 
-    if(elapsedTime > 0.2){
+
+    if(game.isCalculatingOfflineProgress){
+        if(theory.isAutoBuyerActive){
             
-        if(game.isCalculatingOfflineProgress){
-            //beginning time until t=100 : 2min 25s /
-            //t = 1000 until t = 1100: 2 min /
-            //TODO t multiplier for elapsed time somehow calculate actual dt given the amount of upgrades, i.e. does t increase at all
-            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-            t += dts[dtMilestone.level] * (elapsedTime) * min(currency.value.abs()/theory.tau, BigNumber.ONE)* 7;
+            if(currency.value > 0){
+                //aaaaaaaaaaaaaaaa
+                //this'll do for now, as although it heavily penalizes t accumulation during offline, the player can simply turn off autobuyer.
+                let temptime = elapsedTime;
+                let startT = t.toNumber();
+                let autobuyAttempts = Math.ceil(temptime * game.automation.rate);
+                let ratio = (currency.value/theory.tau)
+                startT += dts[dtMilestone.level] * elapsedTime * 10
+                let diff = (startT - t);
+                let h = diff * ratio / autobuyAttempts;
+                t += h;
+                
+            }else{
+                t += dts[dtMilestone.level] * (elapsedTime) * 10;
+                
+            }
         }else{
-            t += dts[dtMilestone.level] * (elapsedTime) * min(currency.value.abs()/theory.tau, BigNumber.ONE)* 7;
+            t += dts[dtMilestone.level] * elapsedTime * 10
         }
-        resetToPIMult();
-        t += Math.PI;
-        currency.value = BigNumber.ZERO;
+        lastTickWasAFK = true;
+    }else{
+        if(lastTickWasAFK){
+            //we just finished offline calculations
+            
+            resetToPIMult();
+            t += Math.PI;
+            currency.value = BigNumber.ZERO;
+        }
+        t += dts[dtMilestone.level] * elapsedTime * 10
+        lastTickWasAFK = false;
     }
-    
     theory.invalidateSecondaryEquation();
 }
 
@@ -235,14 +250,14 @@ var getSecondaryEquation = () => {
         result += "q={" + q + "}";
         result += "\\ ";
         result += "\\dot q={q_1" 
-        result += qMilestone2.level > 0 ? "q_2" : ""
+        result += qMilestone.level > 1 ? "q_2" : ""
         result += "}/1e3";
     }
     result += "\\end{matrix}";
     return result
 }
 var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
-var getPublicationMultiplier = (tau) => tau.pow(0.2);
+var getPublicationMultiplier = (tau) => tau.pow(0.15) * 10;
 var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.2}";
 var getTau = () => currency.value;
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
