@@ -9,12 +9,12 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 1.8;
+var version = 2.0;
 
 var lastTickWasAFK = false;
 var currency;
 var f, t, c1, c2, q, q1, p, dt, unbreak;
-var dtMilestone, c1Exp, c2Exp;
+var dtMilestone, qPowMilestone, qMilestone;
 var dts = [0.1, 0.025, 6.25e-3];
 var achievement1, achievement2;
 //var chapter1, chapter2;
@@ -160,6 +160,14 @@ var init = () => {
             qMilestone.info = Localization.getUpgradeUnlockInfo(qMilestone.level == 0 ? "q_1" : "q_2");
         }
     }
+    //q power milestone
+    {
+        qPowMilestone = theory.createMilestoneUpgrade(2, 3);
+        qPowMilestone.description =  Localization.getUpgradeIncCustomExpDesc("q", "0.1");
+        qPowMilestone.info = Localization.getUpgradeIncCustomExpInfo("q", "0.1");
+        qPowMilestone.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); updateAvailability();};
+        qPowMilestone.isAvailable = false;
+    }
     //TODO q power exponent i.e. q˘1.15nshiet
     /////////////////
     //// Achievements
@@ -172,6 +180,7 @@ var init = () => {
 var updateAvailability = () => {
     q1.isAvailable = qMilestone.level > 0;
     q2.isAvailable = qMilestone.level > 1;
+    qPowMilestone.isAvailable = qMilestone.level > 0;
 }
 
 var tick = (elapsedTime, multiplier) => {
@@ -179,7 +188,7 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
         bonus * 
-        (qMilestone.level > 0 ? q : 1) *
+        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.1 + 1) : 1) *
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
@@ -255,6 +264,7 @@ var getPrimaryEquation = () => {
     result += "^{p}"
     result += "}{100dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
+    result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.1) + "}" : ""
     result += "\\cos{(t)}"
     
     return result;
