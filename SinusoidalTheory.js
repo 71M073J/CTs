@@ -9,7 +9,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 2.0;
+var version = 2.1;
 
 var lastTickWasAFK = false;
 var currency;
@@ -200,21 +200,16 @@ var tick = (elapsedTime, multiplier) => {
 
     //buys = ups[3].getMax(p.level, currency.value)
 
-    maxCurrVal = currency.value > maxCurrVal ? currency.value : maxCurrVal;
+    //maxCurrVal = currency.value > maxCurrVal ? currency.value : maxCurrVal;
     if(game.isCalculatingOfflineProgress){
         if(theory.isAutoBuyerActive && currency.value > 0){
 
-            //aaaaaaaaaaaaaaaa
-            //this'll do for now, as although it heavily penalizes t accumulation during offline, the player can simply turn off autobuyer.
-
-            //((maxCurrVal / theory.tau) + 1).log2() * somethign aaaaa
             buys = 0;
-            for(let i = 0; i < theory.upgrades.length; i ++){
+            for(let i = 1; i < theory.upgrades.length; i ++){
                 let upg = theory.upgrades[i];
-                if (i == 0) continue;
                 buys += ups[i].getMax(upg.level, max(currency.value, 1));
             }
-            t = max(t, t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * 2 * Math.PI)
+            t = max(t, t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * Math.PI)
         }else{
             t += dts[dtMilestone.level] * elapsedTime * 10
         }
