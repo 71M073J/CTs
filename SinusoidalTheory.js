@@ -45,7 +45,7 @@ var init = () => {
     ups = [
         new FreeCost(),
         new ExponentialCost(1e2, Math.sqrt(3)),
-        new ExponentialCost(1e15, 20), 
+        new ExponentialCost(1e15, 30), 
         new ExponentialCost(1, 2), 
         new ExponentialCost(1, Math.log10(3)), 
         new ExponentialCost(50, Math.sqrt(5))
@@ -163,8 +163,8 @@ var init = () => {
     //q power milestone
     {
         qPowMilestone = theory.createMilestoneUpgrade(2, 3);
-        qPowMilestone.description =  Localization.getUpgradeIncCustomExpDesc("q", "0.1");
-        qPowMilestone.info = Localization.getUpgradeIncCustomExpInfo("q", "0.1");
+        qPowMilestone.description =  Localization.getUpgradeIncCustomExpDesc("q", "0.05");
+        qPowMilestone.info = Localization.getUpgradeIncCustomExpInfo("q", "0.05");
         qPowMilestone.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); updateAvailability();};
         qPowMilestone.isAvailable = false;
     }
@@ -188,7 +188,7 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
         bonus * 
-        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.1 + 1) : 1) *
+        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
@@ -202,8 +202,7 @@ var tick = (elapsedTime, multiplier) => {
 
     //maxCurrVal = currency.value > maxCurrVal ? currency.value : maxCurrVal;
     if(game.isCalculatingOfflineProgress){
-        if(theory.isAutoBuyerActive && currency.value > 0){
-
+        if(theory.isAutoBuyerActive && currency.value > 0 && elapsedTime > 0.15){
             buys = 0;
             for(let i = 1; i < theory.upgrades.length; i ++){
                 let upg = theory.upgrades[i];
@@ -223,7 +222,7 @@ var tick = (elapsedTime, multiplier) => {
             currency.value = BigNumber.ZERO;
             lastTickWasAFK = false;        
         }
-        if(elapsedTime > 100){
+        if(elapsedTime > 0.15 && theory.isAutoBuyerActive){
 
             buys = 0;
             for(let i = 0; i < theory.upgrades.length; i ++){
@@ -259,7 +258,7 @@ var getPrimaryEquation = () => {
     result += "^{p}"
     result += "}{100dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
-    result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.1) + "}" : ""
+    result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : ""
     result += "\\cos{(t)}"
     
     return result;
