@@ -9,7 +9,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 2.1;
+var version = 2.2;
 
 var lastTickWasAFK = false;
 var currency;
@@ -45,7 +45,7 @@ var init = () => {
     ups = [
         new FreeCost(),
         new ExponentialCost(1e2, Math.sqrt(3)),
-        new ExponentialCost(1e15, 50), 
+        new ExponentialCost(1e15, 20), 
         new ExponentialCost(1, 2), 
         new ExponentialCost(1, Math.log10(3)), 
         new ExponentialCost(50, Math.sqrt(5))
@@ -298,7 +298,7 @@ var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.valu
 var getF = (level) => (level * 100)/1000
 var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getC2 = (level) => BigNumber.TWO.pow(level);
-var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 50, 1) //BigNumber.from(level);
+var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 20, 1) //BigNumber.from(level);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100)) 
 var getC1Exponent = (level) => BigNumber.from(1 + 0.05 * level);
