@@ -209,7 +209,7 @@ var tick = (elapsedTime, multiplier) => {
                 let upg = theory.upgrades[i];
                 buys += ups[i].getMax(upg.level, max(currency.value, 1));
             }
-            t = max(t, t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * Math.PI)
+            t = max(max(t - (t % (2 * Math.PI)), maxt), t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * Math.PI)
         }else{
             t += dts[dtMilestone.level] * elapsedTime * 10
         }
@@ -232,7 +232,7 @@ var tick = (elapsedTime, multiplier) => {
                 buys += ups[i].getMax(upg.level, max(currency.value, 1));
 
             }
-            t = max(t, t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * 2 * Math.PI)
+            t = max(max(t - (t % (2 * Math.PI)), maxt), t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * 2 * Math.PI)
             resetToPIMult();
             currency.value = BigNumber.ZERO;
         }else{
