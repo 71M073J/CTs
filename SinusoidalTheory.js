@@ -44,8 +44,8 @@ var init = () => {
     };
     ups = [
         new FreeCost(),
-        new ExponentialCost(1e2, Math.sqrt(3)),
-        new ExponentialCost(1e15, 30), 
+        new ExponentialCost(1e10, Math.sqrt(3)),
+        new ExponentialCost(1e20, 30), 
         new ExponentialCost(1, 2), 
         new ExponentialCost(1, Math.log10(3)), 
         new ExponentialCost(50, Math.sqrt(5))
