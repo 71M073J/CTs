@@ -192,7 +192,7 @@ var tick = (elapsedTime, multiplier) => {
         (getF(f.level) + 
         getC1(c1.level) *
         getC2(c2.level)) *
-        (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (100*dts[dtMilestone.level])) *
+        (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*dts[dtMilestone.level])) *
         Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     
     
@@ -256,7 +256,7 @@ var getPrimaryEquation = () => {
     //if (c2Exp.level == 3) result += "^{0.15}";
     result += dtMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (dtMilestone.level * 2) + "}}"
     result += "^{p}"
-    result += "}{100dt} \\ "
+    result += "}{10dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
     result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : ""
     result += "\\cos{(t)}"
