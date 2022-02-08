@@ -13,7 +13,7 @@ var version = 2.2;
 
 var lastTickWasAFK = false;
 var currency;
-var f, t, c1, c2, q, q1, p, dt, unbreak;
+var f, t, c, c1, c2, q, q1, p, dt, unbreak;
 var dtMilestone, qPowMilestone, qMilestone;
 var dts = [0.1, 0.025, 6.25e-3];
 var achievement1, achievement2;
@@ -26,6 +26,7 @@ var init = () => {
     currency = theory.createCurrency();
     //currency2 = theory.createCurrency();
     t = BigNumber.ZERO;
+    c = BigNumber.ONE;
     maxt = BigNumber.ZERO;
     maxCurrVal = BigNumber.ZERO;
     q = BigNumber.ONE;
@@ -190,25 +191,24 @@ var tick = (elapsedTime, multiplier) => {
         bonus * 
         (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (getF(f.level) + 
-        getC1(c1.level) *
-        getC2(c2.level)) *
+        c *
         (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*dts[dtMilestone.level])) *
         Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     
     
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
-
+    c += (getC1(c1.level) * getC2(c2.level)));
     //buys = ups[3].getMax(p.level, currency.value)
 
     //maxCurrVal = currency.value > maxCurrVal ? currency.value : maxCurrVal;
     if(game.isCalculatingOfflineProgress){
-        if(theory.isAutoBuyerActive && currency.value > 0 && elapsedTime > 0.15){
+        if(theory.isAutoBuyerActive && currency.value > 0){
             buys = 0;
             for(let i = 1; i < theory.upgrades.length; i ++){
                 let upg = theory.upgrades[i];
                 buys += ups[i].getMax(upg.level, max(currency.value, 1));
             }
-            t = max(max(t - (t % (2 * Math.PI)), maxt), t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * Math.PI)
+            t = max(max(t - (t % (2 * Math.PI)), maxt), t + (dts[dtMilestone.level] * elapsedTime * 10) - buys * (Math.PI / 2))
         }else{
             t += dts[dtMilestone.level] * elapsedTime * 10
         }
@@ -218,11 +218,11 @@ var tick = (elapsedTime, multiplier) => {
             //we just finished offline calculations
             
             resetToPIMult();
-            t += Math.PI;
+            //t += Math.PI;
             currency.value = BigNumber.ZERO;
             lastTickWasAFK = false;        
         }
-        if(elapsedTime > 0.15 && theory.isAutoBuyerActive){
+        if(elapsedTime > 0.5 && theory.isAutoBuyerActive){
 
             buys = 0;
             for(let i = 0; i < theory.upgrades.length; i ++){
@@ -238,18 +238,18 @@ var tick = (elapsedTime, multiplier) => {
             t += dts[dtMilestone.level] * elapsedTime * 10
         }
     }
-    
+    theory.invalidateTertiaryEquation();
     theory.invalidateSecondaryEquation();
 }
 
 var getPrimaryEquation = () => {
-    let result = "\\dot\\rho = f + c_1";
+    let result = "\\dot\\rho = f + c";
 
     //if (c1Exp.level == 1) result += "^{0.05}";
     //if (c1Exp.level == 2) result += "^{0.1}";
     //if (c1Exp.level == 3) result += "^{0.15}";
 
-    result += "c_2";
+    //result += "c_2";
 
     //if (c2Exp.level == 1) result += "^{0.05}";
     //if (c2Exp.level == 2) result += "^{0.1}";
@@ -273,9 +273,7 @@ var postPublish = () => {
 var getSecondaryEquation = () => {
     
     let result = "\\begin{matrix}";
-    result += "t={" + t.toNumber().toFixed(2) + "}";
-    result += "\\ ";
-    result += "dt=" + dts[dtMilestone.level];
+    result += "\\dot c=c_1c_2"
     if(qMilestone.level > 0){
         result += "\\\\";
         result += "q={" + q + "}";
@@ -289,7 +287,14 @@ var getSecondaryEquation = () => {
     result += "\\end{matrix}";
     return result
 }
-var getTertiaryEquation = () => theory.latexSymbol + "=\\max\\rho";
+var getTertiaryEquation = () => {
+    let result = theory.latexSymbol + "=\\max\\rho";
+    result += "\\ \\ "
+    result += "t={" + t.toNumber().toFixed(2) + "}";
+    result += "\\ ";
+    result += "dt=" + dts[dtMilestone.level];
+    return result;
+}
 var getPublicationMultiplier = (tau) => tau.pow(0.1) * 10;
 var getPublicationMultiplierFormula = (symbol) => "10 \\cdot" + symbol + "^{0.1}";
 var getTau = () => currency.value;
@@ -307,13 +312,13 @@ var setInternalState = (state) => { //set the internal state of values that need
     let values = state.split(" "); //save values to a string
     if (values.length > 0) t = parseBigNumber(values[0]);
     if (values.length > 1) q = parseBigNumber(values[1]);
-    if (values.length > 2) maxCurrVal = parseBigNumber(values[2]);
+    if (values.length > 2) c = parseBigNumber(values[2]);
     //if (values.length > 2) currency.value = parseBigNumber(values[2]);
 }
 
 var getInternalState = () => {
     //resetToPIMult();
     //currency.value = 0;
-    return `${t} ${q} ${maxCurrVal}`// ${currency.value}` //return the data saved 
+    return `${t} ${q} ${c}`// ${currency.value}` //return the data saved 
 }
 init();
