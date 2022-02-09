@@ -190,7 +190,7 @@ var tick = (elapsedTime, multiplier) => {
     currency.value += dt * 
         bonus * 
         (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
-        (getF(f.level) + 
+        getF(f.level) + 
         c *
         (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*dts[dtMilestone.level])) *
         Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
@@ -273,6 +273,7 @@ var postPublish = () => {
 var getSecondaryEquation = () => {
     
     let result = "\\begin{matrix}";
+    result += "c = {" + c + "} \\ "
     result += "\\dot c=c_1c_2"
     if(qMilestone.level > 0){
         result += "\\\\";
