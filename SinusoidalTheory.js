@@ -190,10 +190,10 @@ var tick = (elapsedTime, multiplier) => {
     currency.value += dt * 
         bonus * 
         (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
-        getF(f.level) + 
+        (getF(f.level) + 
         c *
         (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*dts[dtMilestone.level])) *
-        Math.cos(t.toNumber());// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
+        Math.cos(t.toNumber()));// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     
     
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
