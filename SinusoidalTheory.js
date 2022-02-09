@@ -197,7 +197,7 @@ var tick = (elapsedTime, multiplier) => {
     
     
     q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
-    c += (getC1(c1.level) * getC2(c2.level)));
+    c += (getC1(c1.level) * getC2(c2.level));
     //buys = ups[3].getMax(p.level, currency.value)
 
     //maxCurrVal = currency.value > maxCurrVal ? currency.value : maxCurrVal;
