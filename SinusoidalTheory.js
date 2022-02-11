@@ -22,7 +22,7 @@ var maxt, currMax, ups, buys, taupau = 0.2;
 var init = () => {
     currency = theory.createCurrency();
     //currency2 = theory.createCurrency();
-    savet = BigNumber.ZERO;
+    savet = [BigNumber.ZERO,BigNumber.ZERO];
     t = BigNumber.ZERO;
     c = BigNumber.ONE;
     maxt = BigNumber.ZERO;
@@ -146,8 +146,8 @@ var init = () => {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
         dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         dtMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet = t; t = t.pow(1/Math.sqrt(2)); savet = savet - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
-        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet; resetToPIMult(); currency.value = BigNumber.ZERO;}
+        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[dtMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[dtMilestone.level] = savet[dtMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
+        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[dtMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;}
         dtMilestone.isAvailable = true;
     }
     //q milestone
@@ -335,13 +335,14 @@ var setInternalState = (state) => { //set the internal state of values that need
     if (values.length > 1) q = parseBigNumber(values[1]);
     if (values.length > 2) c = parseBigNumber(values[2]);
     if (values.length > 3) currMax = parseFloat(values[3]);
-    if (values.length > 4) savet = parseBigNumber(values[4]);
+    if (values.length > 4) savet[0] = parseBigNumber(values[4]);
+    if (values.length > 4) savet[1] = parseBigNumber(values[5]);
     //if (values.length > 2) currency.value = parseBigNumber(values[2]);
 }
 
 var getInternalState = () => {
     //resetToPIMult();
     //currency.value = 0;
-    return `${t} ${q} ${c} ${currMax} ${savet}`// ${currency.value}` //return the data saved 
+    return `${t} ${q} ${c} ${currMax} ${savet[0]} ${savet[1]}`// ${currency.value}` //return the data saved 
 }
 init();
