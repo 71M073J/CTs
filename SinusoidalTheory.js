@@ -144,7 +144,7 @@ var init = () => {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
         dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = sqrt(t)";
         dtMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); t = t.sqrt(); maxt = t; resetToPIMult();};
+        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); t = t.pow(1/Math.sqrt(2)); maxt = t; resetToPIMult();};
         dtMilestone.isAvailable = true;
     }
     //q milestone
