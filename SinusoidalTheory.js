@@ -334,12 +334,13 @@ var setInternalState = (state) => { //set the internal state of values that need
     if (values.length > 1) q = parseBigNumber(values[1]);
     if (values.length > 2) c = parseBigNumber(values[2]);
     if (values.length > 3) currMax = parseFloat(values[3]);
+    if (values.length > 4) savet = parseBigNumber(values[4]);
     //if (values.length > 2) currency.value = parseBigNumber(values[2]);
 }
 
 var getInternalState = () => {
     //resetToPIMult();
     //currency.value = 0;
-    return `${t} ${q} ${c} ${currMax}`// ${currency.value}` //return the data saved 
+    return `${t} ${q} ${c} ${currMax} ${savet}`// ${currency.value}` //return the data saved 
 }
 init();
