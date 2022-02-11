@@ -146,8 +146,8 @@ var init = () => {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
         dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         dtMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet = t; t = t.pow(1/Math.sqrt(2)); savet = savet - t; maxt = t; resetToPIMult();};
-        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet; resetToPIMult();}
+        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet = t; t = t.pow(1/Math.sqrt(2)); savet = savet - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
+        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet; resetToPIMult(); currency.value = BigNumber.ZERO;}
         dtMilestone.isAvailable = true;
     }
     //q milestone
@@ -159,6 +159,7 @@ var init = () => {
             theory.invalidatePrimaryEquation(); resetToPIMult(); updateAvailability();
             qMilestone.description = Localization.getUpgradeUnlockDesc(qMilestone.level == 0 ? "q_1" : "q_2");
             qMilestone.info = Localization.getUpgradeUnlockInfo(qMilestone.level == 0 ? "q_1" : "q_2");
+            currency.value = BigNumber.ZERO;
         }
     }
     //q power milestone
