@@ -139,7 +139,7 @@ var init = () => {
     }*/
     ///////////////////////
     //// Milestone Upgrades
-    theory.setMilestoneCost(new CompositeCost(7, new LinearCost(25/**taupau*/, 25/**taupau*/), new LinearCost(200/**taupau*/, 50/**taupau*/)));
+    theory.setMilestoneCost(new CompositeCost(7, new LinearCost(25*taupau, 25*taupau), new LinearCost(200*taupau, 50*taupau)));
     
     //dt milestone
     {
@@ -315,9 +315,9 @@ var getTertiaryEquation = () => {
     //result += "dt" + Math.pow(1/currMax, 0.75);
     return result;
 }
-var getPublicationMultiplier = (tau) => tau.pow(0.1) / 10;
-var getPublicationMultiplierFormula = (symbol) => "10 \\cdot" + symbol + "^{0.1}";
-var getTau = () => currency.value.abs();//.pow(taupau);
+var getPublicationMultiplier = (tau) => tau.pow(1/taupau).pow(0.1) / 10;
+var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.5} / 10";
+var getTau = () => currency.value.abs().pow(taupau);
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000;
 var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
@@ -337,7 +337,7 @@ var setInternalState = (state) => { //set the internal state of values that need
     if (values.length > 3) currMax = parseFloat(values[3]);
     if (values.length > 4) savet[0] = parseBigNumber(values[4]);
     if (values.length > 4) savet[1] = parseBigNumber(values[5]);
-    //if (values.length > 2) currency.value = parseBigNumber(values[2]);
+    
 }
 
 var getInternalState = () => {
