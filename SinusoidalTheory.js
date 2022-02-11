@@ -17,10 +17,12 @@ var f, t, c, c1, c2, q, q1, p, dt, unbreak;
 var dtMilestone, qPowMilestone, qMilestone;
 var achievement1, achievement2;
 //var chapter1, chapter2;
+var savet;
 var maxt, currMax, ups, buys, taupau = 0.2;
 var init = () => {
     currency = theory.createCurrency();
     //currency2 = theory.createCurrency();
+    savet = BigNumber.ZERO;
     t = BigNumber.ZERO;
     c = BigNumber.ONE;
     maxt = BigNumber.ZERO;
@@ -142,9 +144,10 @@ var init = () => {
     //dt milestone
     {
         dtMilestone = theory.createMilestoneUpgrade(0, 2);
-        dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = sqrt(t)";
+        dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         dtMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); t = t.pow(1/Math.sqrt(2)); maxt = t; resetToPIMult();};
+        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet = t; t = t.pow(1/Math.sqrt(2)); savet = savet - t; maxt = t; resetToPIMult();};
+        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet; resetToPIMult();}
         dtMilestone.isAvailable = true;
     }
     //q milestone
@@ -307,7 +310,7 @@ var getTertiaryEquation = () => {
     result += "\\ \\ "
     result += "t={" + t.toNumber().toFixed(2) + "}";
     result += "\\ ";
-    result += "dt=" + getdt().toFixed(2);
+    result += "dt=" + getdt().toFixed(3);
     //result += "dt" + Math.pow(1/currMax, 0.75);
     return result;
 }
