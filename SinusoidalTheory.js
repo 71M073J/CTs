@@ -288,6 +288,8 @@ var postPublish = () => {
     q = BigNumber.ONE;
     c = BigNumber.ONE;
     currMax = 1;
+    savet[0] = BigNumber.ZERO;
+    savet[1] = BigNumber.ZERO;
 }
 var getSecondaryEquation = () => {
     
