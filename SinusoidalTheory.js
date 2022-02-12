@@ -209,8 +209,8 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
         bonus * 
-        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (getF(f.level) + 
+        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (cPowMilestone.level > 0 ? c.pow(cPowMilestone.level * 0.001 + 1) : c) *
         (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*getdt())) *
         Math.cos(t.toNumber()));// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
