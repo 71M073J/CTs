@@ -215,8 +215,9 @@ var tick = (elapsedTime, multiplier) => {
         (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*getdt())) *
         Math.cos(t.toNumber()));// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
     
-    
-    q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e5) * (elapsedTime * 10);
+    if(qMilestone.level > 0){
+        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e5) * (elapsedTime * 10);
+    }
     c += (getC1(c1.level) * getC2(c2.level) * getdt());
     //buys = ups[3].getMax(p.level, currency.value)
     if(currency.value > 0 && currency.value.log10() > currMax){
