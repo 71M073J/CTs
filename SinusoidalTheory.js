@@ -9,7 +9,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 3.0;
+var version = 3.3;
 
 var lastTickWasAFK = false;
 var currency;
@@ -209,14 +209,15 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
         bonus * 
-        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (getF(f.level) + 
+        (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (cPowMilestone.level > 0 ? c.pow(cPowMilestone.level * 0.001 + 1) : c) *
-        (t.pow(Math.pow(Math.sqrt(2), qMilestone.level) * getP(p.level)) /  (10*getdt())) *
-        Math.cos(t.toNumber()));// - Math.sin(t) + Math.cos(t)) //.pow(getC2Exponent(c2Exp.level))
+        (t.pow(Math.pow(Math.sqrt(2), dtMilestone.level) * getP(p.level)) /  (10*getdt())) *
+        Math.cos(t.toNumber()));
     
-    
-    q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e5) * (elapsedTime * 10);
+    if(qMilestone.level > 0){
+        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e5) * (elapsedTime * 10);
+    }
     c += (getC1(c1.level) * getC2(c2.level) * getdt());
     //buys = ups[3].getMax(p.level, currency.value)
     if(currency.value > 0 && currency.value.log10() > currMax){
@@ -287,6 +288,8 @@ var postPublish = () => {
     q = BigNumber.ONE;
     c = BigNumber.ONE;
     currMax = 1;
+    savet[0] = BigNumber.ZERO;
+    savet[1] = BigNumber.ZERO;
 }
 var getSecondaryEquation = () => {
     
