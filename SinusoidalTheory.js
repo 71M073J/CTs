@@ -3,7 +3,7 @@ import { Localization } from "./api/Localization";
 import { BigNumber, parseBigNumber } from "./api/BigNumber";
 import { theory } from "./api/Theory";
 import { Utils } from "./api/Utils";
-import { game, Game } from "./api/Game"
+import { game, Game } from "./api/Game";
 
 var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
