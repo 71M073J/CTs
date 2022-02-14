@@ -285,8 +285,7 @@ var getPrimaryEquation = () => {
     result += pMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (pMilestone.level * 2) + "}}"
     result += "^{p}"
     result += "}{10dt} \\ "
-    result += qMilestone.level > 0 ? "q" : ""
-    result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : ""
+    result += qMilestone.level > 0 ? "q" + (qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : "") : ""
     result += "\\cos{(t)}"
     
     return result;
