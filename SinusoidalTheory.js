@@ -9,12 +9,12 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 3.3;
+var version = 4.0;
 
 var lastTickWasAFK = false;
 var currency;
 var f, t, c, c1, c2, q, q1, p, dt, unbreak;
-var dtMilestone, qPowMilestone, qMilestone;
+var pMilestone, qPowMilestone, qMilestone;
 var achievement1, achievement2;
 //var chapter1, chapter2;
 var savet;
@@ -35,25 +35,36 @@ var init = () => {
     min = (a,b) => {
         if (a < b){return a} else {return b}
     };
+    setMaxt = (resetT) => {
+        if (resetT){
+            let h = t - (t % (2 * Math.PI));
+            if(h > maxt){
+                maxt = h;
+            }
+        }else{
+            if(t > maxt){
+                maxt = t;
+            }
+        }
+    }
     resetToPIMult = () => {
         t = max(t - (t % (2 * Math.PI)), maxt);
-        if(t > maxt){
-            maxt = t;
-        }
+        setMaxt();
     };
     ups = [
         new FreeCost(),
         new ExponentialCost(1e25, Math.sqrt(5)),
-        new ExponentialCost(1e50, 35), 
+        new ExponentialCost(1e35, 20), 
         new ExponentialCost(1, 2), 
-        new ExponentialCost(1, Math.log10(3)), 
-        new ExponentialCost(50, Math.sqrt(5))
+        new ExponentialCost(50, Math.log10(5)), 
+        new ExponentialCost(1000, Math.sqrt(3.75))
     ]
 
     theory.primaryEquationHeight = 50;
     theory.secondaryEquationHeight = 40;
     ///////////////////
     // Regular Upgrades
+    
     //f, free upgrade
     {
         let getDesc = (level) => "f={" + getF(level) + "}";
@@ -120,11 +131,11 @@ var init = () => {
     /////////////////////
     // Permanent Upgrades
     {
-        p1 = theory.createPublicationUpgrade(0, currency, 1e10);//1e10
+        p1 = theory.createPublicationUpgrade(0, currency, 1e12);//1e10
         p1.boughtOrRefunded = (_) => {resetToPIMult();};
     }
     {
-        p2 = theory.createBuyAllUpgrade(1, currency, 1e6);//1e6
+        p2 = theory.createBuyAllUpgrade(1, currency, 1e10);//1e6
         p2.boughtOrRefunded = (_) => resetToPIMult();
     }
     {
@@ -143,12 +154,12 @@ var init = () => {
     
     //dt milestone
     {
-        dtMilestone = theory.createMilestoneUpgrade(0, 2);
-        dtMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
-        dtMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
-        dtMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[dtMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[dtMilestone.level] = savet[dtMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
-        dtMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[dtMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;}
-        dtMilestone.isAvailable = true;
+        pMilestone = theory.createMilestoneUpgrade(0, 2);
+        pMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
+        pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
+        pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
+        pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;}
+        pMilestone.isAvailable = true;
     }
     //q milestone
     {
@@ -176,7 +187,7 @@ var init = () => {
         cPowMilestone.description =  Localization.getUpgradeIncCustomExpDesc("c", "0.001");
         cPowMilestone.info = Localization.getUpgradeIncCustomExpInfo("c", "0.001");
         cPowMilestone.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); updateAvailability(); resetToPIMult(); currency.value = BigNumber.ZERO;};
-        cPowMilestone.isAvailable = false;
+        //cPowMilestone.isAvailable = false;
     }
     /////////////////
     //// Achievements
@@ -190,7 +201,7 @@ var updateAvailability = () => {
     q1.isAvailable = qMilestone.level > 0;
     q2.isAvailable = qMilestone.level > 1;
     qPowMilestone.isAvailable = qMilestone.level > 0;
-    cPowMilestone.isAvailable = qPowMilestone.level > 2;
+    //cPowMilestone.isAvailable = qPowMilestone.level > 2;
 }
 
 var simulateTResets = (elapsedTime) => {
@@ -198,9 +209,10 @@ var simulateTResets = (elapsedTime) => {
     for(let i = 1; i < theory.upgrades.length; i ++){
         let upg = theory.upgrades[i];
         buys += ups[i].getMax(upg.level, max(currency.value, 1));
-        theory.upgrades[i].buy(-1);
+        if (theory.upgrades[i].isAutoBuyable)theory.upgrades[i].buy(-1);
     }
     t = max(max(t - (t % (2 * Math.PI)), maxt), t + (getdt() * elapsedTime * 10) - (buys * (Math.PI / 2)));
+    setMaxt(true);
 }
 
 
@@ -212,13 +224,13 @@ var tick = (elapsedTime, multiplier) => {
         (getF(f.level) + 
         (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (cPowMilestone.level > 0 ? c.pow(cPowMilestone.level * 0.001 + 1) : c) *
-        (t.pow(Math.pow(Math.sqrt(2), dtMilestone.level) * getP(p.level)) /  (10*getdt())) *
+        (t.pow(Math.pow(Math.sqrt(2), pMilestone.level) * getP(p.level)) /  (100*getdt())) *
         Math.cos(t.toNumber()));
     
     if(qMilestone.level > 0){
-        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e5) * (elapsedTime * 10);
+        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
     }
-    c += (getC1(c1.level) * getC2(c2.level) * getdt());
+    c += (getC1(c1.level) * getC2(c2.level) * getdt()) * (elapsedTime * 10);
     //buys = ups[3].getMax(p.level, currency.value)
     if(currency.value > 0 && currency.value.log10() > currMax){
         currMax = currency.value.log10().toNumber();
@@ -272,9 +284,9 @@ var getPrimaryEquation = () => {
     //if (c2Exp.level == 1) result += "^{0.05}";
     //if (c2Exp.level == 2) result += "^{0.1}";
     //if (c2Exp.level == 3) result += "^{0.15}";
-    result += dtMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (dtMilestone.level * 2) + "}}"
+    result += pMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (pMilestone.level * 2) + "}}"
     result += "^{p}"
-    result += "}{10dt} \\ "
+    result += "}{100dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
     result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : ""
     result += "\\cos{(t)}"
@@ -302,7 +314,7 @@ var getSecondaryEquation = () => {
         result += "\\ ";
         result += "\\dot q={q_1" 
         result += qMilestone.level > 1 ? "q_2" : ""
-        result += "}/1e5";
+        result += "}/1e3";
     }
     //result += "\\\\"
     //result += "buys" + buys
@@ -323,9 +335,9 @@ var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.5} / 10";
 var getTau = () => currency.value.abs().pow(taupau);
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000;
-var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
+var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 15, 1);
 var getC2 = (level) => BigNumber.TWO.pow(level);
-var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 15, 1) //BigNumber.from(level);
+var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1) //BigNumber.from(level);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100)) ;
 var getdt = () => min(0.1, Math.pow(1/currMax, 0.75));
