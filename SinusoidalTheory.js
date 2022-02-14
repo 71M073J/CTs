@@ -155,9 +155,10 @@ var init = () => {
         pMilestone = theory.createMilestoneUpgrade(0, 2);
         pMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
-        pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
-        pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;}
+        pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;updateAvailability();};
+        pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;updateAvailability();}
         pMilestone.isAvailable = true;
+        
     }
     //q milestone
     {
@@ -170,6 +171,7 @@ var init = () => {
             qMilestone.info = Localization.getUpgradeUnlockInfo(qMilestone.level == 0 ? "q_1" : "q_2");
             currency.value = BigNumber.ZERO;
         }
+        qMilestone.canBeRefunded = (_) => ((qPowMilestone.level < 1)||(qMilestone.level > 1)); 
     }
     //q power milestone
     {
@@ -204,6 +206,7 @@ var updateAvailability = () => {
     q1.isAvailable = qMilestone.level > 0;
     q2.isAvailable = qMilestone.level > 1;
     qPowMilestone.isAvailable = qMilestone.level > 0;
+    
     //cPowMilestone.isAvailable = qPowMilestone.level > 2;
 }
 
