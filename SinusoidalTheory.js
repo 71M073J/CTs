@@ -1,4 +1,4 @@
-﻿﻿import { CompositeCost, ConstantCost, Cost, CustomCost, ExponentialCost, FreeCost, LinearCost, StepwiseCost } from "./api/Costs";
+﻿﻿import { CompositeCost, ConstantCost, Cost, CustomCost, ExponentialCost, FirstFreeCost, FreeCost, LinearCost, StepwiseCost } from "./api/Costs";
 import { Localization } from "./api/Localization";
 import { BigNumber, parseBigNumber } from "./api/BigNumber";
 import { theory } from "./api/Theory";
@@ -56,7 +56,7 @@ var init = () => {
         new ExponentialCost(1e25, Math.sqrt(5)),
         new ExponentialCost(1e35, 20), 
         new ExponentialCost(1, 2), 
-        new ExponentialCost(50, Math.log10(5)), 
+        new FirstFreeCost(new ExponentialCost(50, Math.log10(5))), 
         new ExponentialCost(1000, Math.sqrt(3.75))
     ]
 
@@ -156,7 +156,7 @@ var init = () => {
     {
         pMilestone = theory.createMilestoneUpgrade(0, 2);
         pMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
-        pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = sqrt(t)";
+        pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = t.pow(1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; maxt = t; resetToPIMult(); currency.value = BigNumber.ZERO;};
         pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO;}
         pMilestone.isAvailable = true;
@@ -217,6 +217,7 @@ var simulateTResets = (elapsedTime) => {
 
 
 var tick = (elapsedTime, multiplier) => {
+    if (f.level == 0 && c1.level == 0) return;
     let dt = BigNumber.from(elapsedTime * multiplier);
     let bonus = theory.publicationMultiplier;
     currency.value += dt * 
@@ -335,7 +336,7 @@ var getPublicationMultiplierFormula = (symbol) => symbol + "^{0.5} / 10";
 var getTau = () => currency.value.abs().pow(taupau);
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000;
-var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 15, 1);
+var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 15, 0);
 var getC2 = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1) //BigNumber.from(level);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
