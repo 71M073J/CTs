@@ -1,9 +1,9 @@
-import { ExponentialCost, FirstFreeCost } from "../api/Costs";
-import { Localization } from "../api/Localization";
-import { BigNumber } from "../api/BigNumber";
-import { theory } from "../api/Theory";
-import { Utils } from "../api/Utils";
-
+import { CompositeCost, ConstantCost, Cost, CustomCost, ExponentialCost, FirstFreeCost, FreeCost, LinearCost, StepwiseCost } from "./api/Costs";
+import { Localization } from "./api/Localization";
+import { BigNumber, parseBigNumber } from "./api/BigNumber";
+import { theory } from "./api/Theory";
+import { Utils } from "./api/Utils";
+import { game, Game } from "./api/Game";
 
 var id = "pong"
 var name = "Pong Theory";
@@ -15,33 +15,53 @@ var state, center, scale, speed;
 var c1, c2, c3, c4, c5;
 var equation, c3Exp, c4Exp, c5Exp;
 
-var systems = [(v) => new Vector3(10 * (v.y - v.x), v.x * (28 - v.z) - v.y, v.x * v.y - 8 * v.z / 3.0), // Lorenz
-               (v) => new Vector3(10 * (40 * (v.y - v.x)), 10 * (-12 * v.x - v.x * v.z + 28 * v.y), 10 * (v.x * v.y - 3 * v.z)), // Chen
-               (v) => new Vector3(500 * (-v.y - v.z), 500 * (v.x + 0.1 * v.y), 500 * (0.1 + v.z * (v.x - 14)))]; // Rossler
 
-var bounds = [[-10,10],[-20,20]];
+var bounds = [[new Vector3(0, 0, 24.5), new Vector3(-20, -27, 1), new Vector3(20, 27, 30)]];
 
-var defaultStates = [new Vector3(-6, -8, 26),
-                     new Vector3(-10.6, -4.4, 28.6),
-                     new Vector3(-6, 15, 0)];
+var defaultStates = [new Vector3(0, 0, 0)];
 
-var swizzles = [(v) => new Vector3(v.y, v.z, v.x),
+var swizzles = [(v) => new Vector3(v.x, v.y, v.z),
                 (v) => new Vector3(v.y, v.z, v.x),
                 (v) => new Vector3(v.x, v.y, v.z)];
 
-var dts = [0.02, 0.002, 0.00014];
+var dts = [0.05, 0.002, 0.00014];
 var dot = new Vector3(0,0,0)
 var init = () => {
     currency = theory.createCurrency();
-    speed = new Vector3(1, 1, 0)
-    state = new Vector3(0,0,0)
-    center = new Vector3(0,0,0)
-    scale = new Vector3(1,1,1)
+    speed = new Vector3(1, 0, 0) 
     /////////////////////
     // Regular Upgrades
-
-    
-
+    updateSpeed = () => {
+        sign = new Vector3(speed.x > 0 ? 1 : -1, speed.y > 0 ? 1 : -1, speed.z > 0 ? 1 : -1);
+        speed = new Vector3((1 + xspeed.level) * sign.x , yspeed.level * sign.y, zspeed.level * sign.z)
+    }
+    //x speed
+    {
+        let getDesc = (level) => "x_{speed}={" + level + "}";
+        let getInfo = (level) => "x_{speed}=" + level;
+        xspeed = theory.createUpgrade(1, currency, new ExponentialCost(1, 5));
+        xspeed.getDescription = (_) => Utils.getMath(getDesc(xspeed.level));
+        xspeed.getInfo = (amount) => Utils.getMathTo(getInfo(xspeed.level), getInfo(xspeed.level + amount));
+        xspeed.boughtOrRefunded = (_) => {updateSpeed();theory.invalidatePrimaryEquation();}
+    }    
+    //y speed
+    {
+        let getDesc = (level) => "y_{speed}={" + level + "}";
+        let getInfo = (level) => "y_{speed}=" + level;
+        yspeed = theory.createUpgrade(2, currency, new ExponentialCost(1, 6));
+        yspeed.getDescription = (_) => Utils.getMath(getDesc(yspeed.level));
+        yspeed.getInfo = (amount) => Utils.getMathTo(getInfo(yspeed.level), getInfo(yspeed.level + amount));
+        yspeed.boughtOrRefunded = (_) => {updateSpeed();theory.invalidatePrimaryEquation();}
+    }    
+    //z speed
+    {
+        let getDesc = (level) => "z_{speed}={" + level + "}";
+        let getInfo = (level) => "z_{speed}=" + level;
+        zspeed = theory.createUpgrade(3, currency, new ExponentialCost(1, 7));
+        zspeed.getDescription = (_) => Utils.getMath(getDesc(zspeed.level));
+        zspeed.getInfo = (amount) => Utils.getMathTo(getInfo(zspeed.level), getInfo(zspeed.level + amount));
+        zspeed.boughtOrRefunded = (_) => {updateSpeed();theory.invalidatePrimaryEquation();}
+    }    
     /////////////////////
     // Permanent Upgrades
     theory.createPublicationUpgrade(0, currency, 0);
@@ -91,23 +111,31 @@ var resume = () => {
 }
 
 var tick = (elapsedTime, multiplier) => {
-    
-    if (Math.abs(state.x) > bounds[0][1]) speed.x = -speed.x;
-    if (Math.abs(state.y) > bounds[0][1]) speed.y = -speed.y;
-    if (Math.abs(state.z) > bounds[0][1]) speed.z = -speed.z;
+
 
     var dt = BigNumber.from(elapsedTime * multiplier);
     var bonus = theory.publicationMultiplier;
 
+    let bounces = 0;
+    if (Math.abs(state.x) > 10){
+        speed.x = -speed.x;
+        bounces += 1;
+        theory.invalidatePrimaryEquation();
+    } if (Math.abs(state.y) > 10){
+        speed.y = -speed.y;
+        bounces += 1;
+        theory.invalidatePrimaryEquation();
+    } 
+    if (Math.abs(state.z) > 10){
+        speed.z = -speed.z;
+        bounces += 1;
+        theory.invalidatePrimaryEquation();
+    } 
     
-
-
-    //speed = new Vector3(1, -1, 1)
-
-    state = state + dts[0] * 10 * new Vector3(speed.x, speed.y, speed.z)
-
-   
-
+    state = state + dts[0] * new Vector3(speed.x, speed.y, speed.z)
+    if (bounces > 0){
+        currency.value += bounces * currency.value.pow(0.8) + 1
+    }
     //var dx2Term = vc3 * (d.x * d.x);
     //var dy2Term = vc4 * (d.y * d.y);
     //var dz2Term = vc5 * (d.z * d.z);
@@ -139,7 +167,7 @@ var recreateDynamicSystem = () => {
 }
 
 var getPrimaryEquation = () => {
-    return "";
+    return speed.toString();
 }
 
 var getSecondaryEquation = () => {
@@ -147,7 +175,7 @@ var getSecondaryEquation = () => {
 }
 
 var getTertiaryEquation = () => {
-    return "";
+    return state.toString();
 }
 
 var getCoordString = (x) => x.toFixed(x >= 0 ? (x < 10 ? 3 : 2) : (x <= -10 ? 1 : 2));
@@ -155,15 +183,8 @@ var getCoordString = (x) => x.toFixed(x >= 0 ? (x < 10 ? 3 : 2) : (x <= -10 ? 1 
 var getPublicationMultiplier = (tau) => tau.pow(0.15);
 var getPublicationMultiplierFormula = (symbol) => "{" + symbol + "}^{0.15}";
 var getTau = () => currency.value;
-var get3DGraphPoint = () => swizzles[equation.level]((state - center) * scale);
+var get3DGraphPoint = () => swizzles[equation.level]((state) * scale);
 
-var getC1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
-var getC2 = (level) => BigNumber.TWO.pow(level);
-var getC3 = (level) => BigNumber.THREE.pow(level);
-var getC4 = (level) => BigNumber.FIVE.pow(level);
-var getC5 = (level) => BigNumber.SEVEN.pow(level);
-var getC3Exp = (level) => BigNumber.from(1 + level * 0.05);
-var getC4Exp = (level) => BigNumber.from(1 + level * 0.05);
-var getC5Exp = (level) => BigNumber.from(1 + level * 0.05);
+
 
 init();
