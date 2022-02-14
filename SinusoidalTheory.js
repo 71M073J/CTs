@@ -7,21 +7,19 @@ import { game, Game } from "./api/Game";
 
 var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
-var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of PI, allowing the function value to stay centered approximately at 0.";
+var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of π, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 4.0;
+var version = 4;
 
 var lastTickWasAFK = false;
 var currency;
 var f, t, c, c1, c2, q, q1, p, dt, unbreak;
 var pMilestone, qPowMilestone, qMilestone;
 var achievement1, achievement2;
-//var chapter1, chapter2;
 var savet;
 var maxt, currMax, ups, buys, taupau = 0.2;
 var init = () => {
     currency = theory.createCurrency();
-    //currency2 = theory.createCurrency();
     savet = [BigNumber.ZERO,BigNumber.ZERO];
     t = BigNumber.ZERO;
     c = BigNumber.ONE;
@@ -192,8 +190,13 @@ var init = () => {
     /////////////////
     //// Achievements
     //TODO some time in the future
-    //achievement1 = theory.createAchievement(0, "Achievement 1", "Description 1", () => c1.level > 1);
-    //achievement2 = theory.createSecretAchievement(1, "Achievement 2", "Description 2", "Maybe you should buy two levels of c2?", () => c2.level > 1);
+    a1 = theory.createAchievement(0, "First hundred, to many more", "Reach 1e100 rho", () => currency.value > 1e100);
+    a2 = theory.createAchievement(1, "The end, or just the beginning?", "Reach 1e500 rho", () => currency.value > BigNumber.from("1e500"));
+    a3 = theory.createAchievement(2, "Just You Wait", "Reach 1000 t", () => t > 1000);
+    a4 = theory.createAchievement(3, "Keep Waiting", "Reach 10000 t", () => t > 10000);
+    a5 = theory.createAchievement(4, "Fine, You Can Stop Now", "Reach 100000 t", () => t > 100000);
+    s0 = theory.createSecretAchievement(5, "Sleeper", "Reach 1000000 t","You Should Have Stopped",  () => t > 1000000);
+    s1 = theory.createSecretAchievement(6, "Master Mixer", "have q larger than c", "How Do You Even Do That?", () => c < q);
     updateAvailability();
 }
 
@@ -211,7 +214,7 @@ var simulateTResets = (elapsedTime) => {
         buys += ups[i].getMax(upg.level, max(currency.value, 1));
         if (theory.upgrades[i].isAutoBuyable)theory.upgrades[i].buy(-1);
     }
-    t = max(max(t - (t % (2 * Math.PI)), maxt), t + (getdt() * elapsedTime * 10) - (buys * (Math.PI / 2)));
+    t = max(max(t - (t % (2 * Math.PI)), maxt), t + (getdt() * elapsedTime) - (buys * (Math.PI / 2)));
     setMaxt(true);
 }
 
@@ -225,13 +228,13 @@ var tick = (elapsedTime, multiplier) => {
         (getF(f.level) + 
         (qMilestone.level > 0 ? q.pow(qPowMilestone.level * 0.05 + 1) : 1) *
         (cPowMilestone.level > 0 ? c.pow(cPowMilestone.level * 0.001 + 1) : c) *
-        (t.pow(Math.pow(Math.sqrt(2), pMilestone.level) * getP(p.level)) /  (100*getdt())) *
+        (t.pow(Math.pow(Math.sqrt(2), pMilestone.level) * getP(p.level)) /  (10*getdt())) *
         Math.cos(t.toNumber()));
     
     if(qMilestone.level > 0){
-        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e3) * (elapsedTime * 10);
+        q += ((getQ1(q1.level) * getQ2(q2.level)) / 1e2) * (elapsedTime);
     }
-    c += (getC1(c1.level) * getC2(c2.level) * getdt()) * (elapsedTime * 10);
+    c += (getC1(c1.level) * getC2(c2.level) * getdt()) * (elapsedTime);
     //buys = ups[3].getMax(p.level, currency.value)
     if(currency.value > 0 && currency.value.log10() > currMax){
         currMax = currency.value.log10().toNumber();
@@ -240,7 +243,7 @@ var tick = (elapsedTime, multiplier) => {
         if(theory.isAutoBuyerActive && currency.value > 0){
             simulateTResets(elapsedTime)
         }else{
-            t += getdt() * elapsedTime * 10
+            t += getdt() * elapsedTime
         }
         lastTickWasAFK = true;
     }else{
@@ -266,7 +269,7 @@ var tick = (elapsedTime, multiplier) => {
             //resetToPIMult();
             //currency.value = BigNumber.ZERO;
         }else{
-            t += getdt() * elapsedTime * 10
+            t += getdt() * elapsedTime
         }
     }
     theory.invalidateTertiaryEquation();
@@ -276,18 +279,9 @@ var tick = (elapsedTime, multiplier) => {
 var getPrimaryEquation = () => {
     let result = "\\dot\\rho = f + c";
     result += cPowMilestone.level > 0 ? "^{" + (cPowMilestone.level * 0.001 + 1) + "}" : ""
-    //if (c1Exp.level == 1) result += "^{0.05}";
-    //if (c1Exp.level == 2) result += "^{0.1}";
-    //if (c1Exp.level == 3) result += "^{0.15}";
-
-    //result += "c_2";
-
-    //if (c2Exp.level == 1) result += "^{0.05}";
-    //if (c2Exp.level == 2) result += "^{0.1}";
-    //if (c2Exp.level == 3) result += "^{0.15}";
     result += pMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (pMilestone.level * 2) + "}}"
     result += "^{p}"
-    result += "}{100dt} \\ "
+    result += "}{10dt} \\ "
     result += qMilestone.level > 0 ? "q" : ""
     result += qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : ""
     result += "\\cos{(t)}"
@@ -315,7 +309,7 @@ var getSecondaryEquation = () => {
         result += "\\ ";
         result += "\\dot q={q_1" 
         result += qMilestone.level > 1 ? "q_2" : ""
-        result += "}/1e3";
+        result += "}/100";
     }
     //result += "\\\\"
     //result += "buys" + buys
@@ -327,7 +321,7 @@ var getTertiaryEquation = () => {
     result += "\\ \\ "
     result += "t={" + t.toNumber().toFixed(2) + "}";
     result += "\\ ";
-    result += "dt=" + getdt().toFixed(3);
+    result += "dt=" + getdt().toFixed(2);
     //result += "dt" + Math.pow(1/currMax, 0.75);
     return result;
 }
@@ -341,7 +335,7 @@ var getC2 = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1) //BigNumber.from(level);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100)) ;
-var getdt = () => min(0.1, Math.pow(1/currMax, 0.75));
+var getdt = () => 10 * min(0.1, Math.pow(1/currMax, 0.75));
 var getC1Exponent = (level) => BigNumber.from(1 + 0.05 * level);
 var getC2Exponent = (level) => BigNumber.from(1 + 0.05 * level);
 //if you just need to serialise "t", here's an example: quoth philles gillipe
@@ -352,7 +346,7 @@ var setInternalState = (state) => { //set the internal state of values that need
     if (values.length > 2) c = parseBigNumber(values[2]);
     if (values.length > 3) currMax = parseFloat(values[3]);
     if (values.length > 4) savet[0] = parseBigNumber(values[4]);
-    if (values.length > 4) savet[1] = parseBigNumber(values[5]);
+    if (values.length > 5) savet[1] = parseBigNumber(values[5]);
     
 }
 
