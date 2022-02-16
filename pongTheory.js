@@ -33,12 +33,12 @@ var init = () => {
     // Regular Upgrades
     updateSpeed = () => {
         sign = new Vector3(speed.x > 0 ? 1 : -1, speed.y > 0 ? 1 : -1, speed.z > 0 ? 1 : -1);
-        speed = new Vector3((1 + xspeed.level) * sign.x , yspeed.level * sign.y, zspeed.level * sign.z)
+        speed = new Vector3((1 + xspeed.level) * sign.x * 2 , yspeed.level * sign.y * 1.5, zspeed.level * sign.z)
     }
     //x speed
     {
-        let getDesc = (level) => "x_{speed}={" + level + "}";
-        let getInfo = (level) => "x_{speed}=" + level;
+        let getDesc = (level) => "x_{speed}={" + (level*2) + "}";
+        let getInfo = (level) => "x_{speed}=" + (level*2);
         xspeed = theory.createUpgrade(1, currency, new ExponentialCost(1, 5));
         xspeed.getDescription = (_) => Utils.getMath(getDesc(xspeed.level));
         xspeed.getInfo = (amount) => Utils.getMathTo(getInfo(xspeed.level), getInfo(xspeed.level + amount));
@@ -46,8 +46,8 @@ var init = () => {
     }    
     //y speed
     {
-        let getDesc = (level) => "y_{speed}={" + level + "}";
-        let getInfo = (level) => "y_{speed}=" + level;
+        let getDesc = (level) => "y_{speed}={" + (level*1.5) + "}";
+        let getInfo = (level) => "y_{speed}=" + (level*1.5);
         yspeed = theory.createUpgrade(2, currency, new ExponentialCost(1, 6));
         yspeed.getDescription = (_) => Utils.getMath(getDesc(yspeed.level));
         yspeed.getInfo = (amount) => Utils.getMathTo(getInfo(yspeed.level), getInfo(yspeed.level + amount));
@@ -134,7 +134,7 @@ var tick = (elapsedTime, multiplier) => {
     
     state = state + dts[0] * new Vector3(speed.x, speed.y, speed.z)
     if (bounces > 0){
-        currency.value += bounces * currency.value.pow(0.8) + 1
+        currency.value += bonus * 10 * elapsedTime * (bounces * currency.value.pow(0.8) + 1)
     }
     //var dx2Term = vc3 * (d.x * d.x);
     //var dy2Term = vc4 * (d.y * d.y);
@@ -144,14 +144,18 @@ var tick = (elapsedTime, multiplier) => {
     theory.invalidateTertiaryEquation();
 }
 
-var getInternalState = () => `${state.x} ${state.y} ${state.z}`
+var getInternalState = () => `${state.x} ${state.y} ${state.z} ${speed.x} ${speed.y} ${speed.z}`
 
 var setInternalState = (stateString) => {
     let values = stateString.split(" ");
     state = new Vector3(state.x, state.y, state.z); // Make sure that we don't change the default state instances
+    speed = new Vector3(speed.x, speed.y, speed.z);
     if (values.length > 0) state.x = parseFloat(values[0]);
     if (values.length > 1) state.y = parseFloat(values[1]);
     if (values.length > 2) state.z = parseFloat(values[2]);
+    if (values.length > 3) speed.x = parseFloat(values[3]);
+    if (values.length > 4) speed.y = parseFloat(values[4]);
+    if (values.length > 5) speed.z = parseFloat(values[5]);
 }
 
 var postPublish = () => {
