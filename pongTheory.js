@@ -28,7 +28,7 @@ var dts = [0.05, 0.002, 0.00014];
 var dot = new Vector3(0,0,0)
 var init = () => {
     currency = theory.createCurrency();
-    speed = new Vector3(1, 0, 0) 
+    speed = new Vector3(1, 0, 0);
     /////////////////////
     // Regular Upgrades
     updateSpeed = () => {
@@ -117,7 +117,7 @@ var tick = (elapsedTime, multiplier) => {
     var bonus = theory.publicationMultiplier;
 
     let bounces = 0;
-    if (Math.abs(state.x) > 10){
+    if (Math.abs(state.x) > 50){
         speed.x = -speed.x;
         bounces += 1;
         theory.invalidatePrimaryEquation();
@@ -126,7 +126,7 @@ var tick = (elapsedTime, multiplier) => {
         bounces += 1;
         theory.invalidatePrimaryEquation();
     } 
-    if (Math.abs(state.z) > 10){
+    if (Math.abs(state.z) > 5){
         speed.z = -speed.z;
         bounces += 1;
         theory.invalidatePrimaryEquation();
@@ -160,6 +160,7 @@ var setInternalState = (stateString) => {
 
 var postPublish = () => {
     state = defaultStates[equation.level];
+    speed = new Vector3(1, 0, 0);
 }
 
 var recreateDynamicSystem = () => {
