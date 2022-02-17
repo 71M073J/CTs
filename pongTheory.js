@@ -38,7 +38,7 @@ var init = () => {
     }
     updateSpeed = () => {
         //sign = new Vector3(speed.x > 0 ? 1 : (speed.x == 0 ? 0 : -1), speed.y > 0 ? 1 : (speed.y == 0 ? 0 : -1), speed.z > 0 ? 1 : (speed.z == 0 ? : -1));
-        speed = new Vector3((1 + xspeed.level) * sign(speed.x) * 2 , yspeed.level * sign(speed.y) * 1.5, zspeed.level * sign(speed.z));
+        speed = new Vector3(xspeed.level * sign(speed.x) * 2 , (yspeed.level + 1) * sign(speed.y) * 1.5, zspeed.level * sign(speed.z));
     }
     //x speed
     {
