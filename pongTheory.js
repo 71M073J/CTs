@@ -14,7 +14,7 @@ var version = 1;
 var state, center, scale, speed;
 var c1, c2, c3, c4, c5;
 var equation, c3Exp, c4Exp, c5Exp;
-
+var sign;
 
 var bounds = [[new Vector3(0, 0, 24.5), new Vector3(-20, -27, 1), new Vector3(20, 27, 30)]];
 
@@ -31,9 +31,14 @@ var init = () => {
     speed = new Vector3(0, 1, 0);
     /////////////////////
     // Regular Upgrades
+    sign = (x) => {
+        if (x == 0.0) return 0;
+        if (x > 0.0) return 1;
+        return -1;
+    }
     updateSpeed = () => {
-        sign = new Vector3(speed.x > 0 ? 1 : (speed.x == 0 ? 0 : -1), speed.y > 0 ? 1 : (speed.y == 0 ? 0 : -1), speed.z > 0 ? 1 : (speed.z == 0 ? : -1));
-        speed = new Vector3((1 + xspeed.level) * sign.x * 2 , yspeed.level * sign.y * 1.5, zspeed.level * sign.z)
+        //sign = new Vector3(speed.x > 0 ? 1 : (speed.x == 0 ? 0 : -1), speed.y > 0 ? 1 : (speed.y == 0 ? 0 : -1), speed.z > 0 ? 1 : (speed.z == 0 ? : -1));
+        speed = new Vector3((1 + xspeed.level) * sign(speed.x) * 2 , yspeed.level * sign(speed.y) * 1.5, zspeed.level * sign(speed.z));
     }
     //x speed
     {
