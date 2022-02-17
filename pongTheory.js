@@ -117,7 +117,7 @@ var tick = (elapsedTime, multiplier) => {
     var bonus = theory.publicationMultiplier;
 
     let bounces = 0;
-    if (Math.abs(state.x) > 50){
+    if (Math.abs(state.x) > 40){
         speed.x = -speed.x;
         bounces += 1;
         theory.invalidatePrimaryEquation();
