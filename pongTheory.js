@@ -32,7 +32,7 @@ var init = () => {
     /////////////////////
     // Regular Upgrades
     updateSpeed = () => {
-        sign = new Vector3(speed.x > 0 ? 1 : speed.x == 0 ? 0 : -1, speed.y > 0 ? 1 : speed.y == 0 ? 0 : -1, speed.z > 0 ? 1 : speed.z == 0 ? : -1);
+        sign = new Vector3(speed.x > 0 ? 1 : (speed.x == 0 ? 0 : -1), speed.y > 0 ? 1 : (speed.y == 0 ? 0 : -1), speed.z > 0 ? 1 : (speed.z == 0 ? : -1));
         speed = new Vector3((1 + xspeed.level) * sign.x * 2 , yspeed.level * sign.y * 1.5, zspeed.level * sign.z)
     }
     //x speed
