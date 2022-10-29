@@ -9,7 +9,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of π, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 4;
+var version = 5;
 
 var currency;
 var f, c1, c2, q1, q2, p;
@@ -230,6 +230,7 @@ var tick = (elapsedTime, multiplier) => {
     let bonus = theory.publicationMultiplier;
     let effectiveElapsedTime = elapsedTime * multiplier;
     let dt = getdt();
+    //TODO need to account for t resets, there needs to be a penalty for this with large ticks
     
     let vt0 = BigNumber.from(t);
     t += dt * effectiveElapsedTime;
@@ -272,7 +273,7 @@ var tick = (elapsedTime, multiplier) => {
 var getPrimaryEquation = () => {
     let result = "\\dot\\rho = f + c";
     result += cPowMilestone.level > 0 ? "^{" + (cPowMilestone.level * 0.001 + 1) + "}" : ""
-    result += pMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{\\sqrt{" + (pMilestone.level * 2) + "}}"
+    result += pMilestone.level < 1 ? "\\frac{t" : "\\frac{t^{" +( pMilestone.level > 1 ? (pMilestone.level) : "\\sqrt{" + (pMilestone.level * 2) + "}") + "}"
     result += "^{p}"
     result += "}{10 dt} \\ "
     result += qMilestone.level > 0 ? "q" + (qPowMilestone.level > 0 ? "^{" + (1 + qPowMilestone.level * 0.05) + "}" : "") : ""
@@ -298,7 +299,7 @@ var getSecondaryEquation = () => {
         result += "}/100";
     }
     result += "\\\\\\\\";
-    result += "dt=\\min\\{1,5/\\sqrt{\\log_{10}(c)}\\}";
+    result += "dt=\\min\\{1,\\log_{10}(c)^{0.75}\\}";
     result += "\\end{matrix}";
     return result
 }
@@ -307,12 +308,12 @@ var getTertiaryEquation = () => {
     if(qMilestone.level > 0)
         result += ",\\;q=" + q;
     result += ",\\;t=" + t.toFixed(2);
-    result += ",\\;dt=" + getdt().toFixed(2);
+    result += ",\\;dt=" + ((getdt() > 0.01) ? getdt().toFixed(5) : getdt().toExponential(1));
     return result;
 }
 var getPublicationMultiplier = (tau) => tau.pow(1/taupau).pow(0.10) * 5;
-var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol + "^{1.5}";
-var getTau = () => currency.value.abs().pow(taupau);
+var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol + "^{0.5}";
+var getTau = () => currency.value.abs().pow(taupau);//1 e (log10(currency) / 5)
 var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(5), currency.symbol];
 //var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(1/taupau), currency.symbol];
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
@@ -323,8 +324,16 @@ var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100));
 //var getdt = () => Math.min(1,5/Math.sqrt(c.max(BigNumber.TEN).log10().toNumber())); //WAYYYYYY TOO HIGH LATEGAME
-var getdt = () => 10 * ((1/c.pow(0.02)).min(0.1).toNumber());
-//MAYBE GET dt = 1, and dt = math.min(math.poW(1/c, somehting)) into the first milestone?
+//var getdt = () => 10 * ((1/c.pow(0.03)).min(0.1).toNumber());
+var getdt = () => {//TODO still want a bit steeper, but a bit later curve
+    let possible_dt = 10/(c.log10()).pow(0.75)
+    if (possible_dt > 1.0){
+        return 1.0
+    }else{
+        return possible_dt.toNumber()
+    }
+}
+
 var canResetStage = () => true;
 var getResetStageMessage = () => "You are about to reset the current publication."
 var resetStage = () => {
