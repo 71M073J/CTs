@@ -9,7 +9,7 @@ var id = "Sinusoid Theory";
 var name = "Sinusoid Theory";
 var description = "A theory where you have to pay attention to sinusoidal changes in your function. Buying any upgrades reverts time to its last multiple of π, allowing the function value to stay centered approximately at 0.";
 var authors = "71~073~#7380";
-var version = 5;
+var version = 6;
 
 var currency;
 var f, c1, c2, q1, q2, p;
@@ -89,12 +89,13 @@ var init = () => {
     // p
     
     {
-        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}";
+        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\,\ t={" + (t * 0.99).toFixed(1) + "}\\\\ (t * 0.99)";
         let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2);
         p = theory.createUpgrade(4, currency, costs[3]);
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
         p.boughtOrRefunded = (_) => resetToPIMult();
+        p.bought = (levels) => t *= Math.pow(0.99, levels)
         
     }
     // c1
