@@ -15,7 +15,7 @@ var currency;
 var f, c1, c2, q1, q2, p;
 var pMilestone, qPowMilestone, qMilestone;
 var a1, a2, a3, a4, a5, s1, s2;
-var pLevels = 0;
+var pLevel = 0;
 var t = 0;
 var savet = [0, 0];
 var q = BigNumber.ONE;
@@ -97,7 +97,7 @@ var init = () => {
         p.boughtOrRefunded = (_) => resetToPIMult();
         p.bought = (levels) => {
             t *= Math.pow(0.99, levels);
-            pLevels += levels;
+            pLevel += levels;
         }
     }
     // c1
@@ -326,7 +326,7 @@ var getC2 = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100));
-var getTAfterPUpgrade = (level) => min(1, Math.pow(0.99, level))* t
+var getTAfterPUpgrade = (level) => min(1, Math.pow(0.99, level - pLevel))* t
 //var getdt = () => Math.min(1,5/Math.sqrt(c.max(BigNumber.TEN).log10().toNumber())); //WAYYYYYY TOO HIGH LATEGAME
 //var getdt = () => 10 * ((1/c.pow(0.03)).min(0.1).toNumber());
 var getdt = () => {//TODO still want a bit steeper, but a bit later curve
