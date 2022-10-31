@@ -89,7 +89,7 @@ var init = () => {
     // p
     
     {
-        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\,\ t={" + (t * 0.99).toFixed(1) + "}\\\\ (t * 0.99)";
+        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\,\ t={" + getTAfterPUpgrade(level).toFixed(1) + "}\\\\ (t * 0.99)";
         let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2);
         p = theory.createUpgrade(4, currency, costs[3]);
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
@@ -324,6 +324,7 @@ var getC2 = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100));
+var getTAfterPUpgrade = (level) => max(Math.pow(0.99, level), 1) * t
 //var getdt = () => Math.min(1,5/Math.sqrt(c.max(BigNumber.TEN).log10().toNumber())); //WAYYYYYY TOO HIGH LATEGAME
 //var getdt = () => 10 * ((1/c.pow(0.03)).min(0.1).toNumber());
 var getdt = () => {//TODO still want a bit steeper, but a bit later curve
