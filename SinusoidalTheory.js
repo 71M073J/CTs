@@ -94,10 +94,11 @@ var init = () => {
         p = theory.createUpgrade(4, currency, costs[3]);
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
-        p.boughtOrRefunded = (_) => resetToPIMult();
+        p.boughtOrRefunded = (_) => {1;}
         p.bought = (levels) => {
             t *= Math.pow(0.995, levels);
             pLevel += levels;
+            resetToPIMult();
         }
     }
     // c1
@@ -290,6 +291,7 @@ var postPublish = () => {
     savet = [0, 0];
     q = BigNumber.ONE;
     c = BigNumber.ONE;
+    pLevel = 0;
 }
 var getSecondaryEquation = () => {
     
@@ -326,7 +328,7 @@ var getC2 = (level) => BigNumber.TWO.pow(level);
 var getQ1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ2 = (level) => BigNumber.THREE.pow(level);
 var getP = (level) => BigNumber.from(1 + (level / 100));
-var getTAfterPUpgrade = (level) => Math.pow(0.995, level)* t
+var getTAfterPUpgrade = (level) => Math.pow(0.995, level - pLevel)* t;
 //var getdt = () => Math.min(1,5/Math.sqrt(c.max(BigNumber.TEN).log10().toNumber())); //WAYYYYYY TOO HIGH LATEGAME
 //var getdt = () => 10 * ((1/c.pow(0.03)).min(0.1).toNumber());
 var getdt = () => {//TODO still want a bit steeper, but a bit later curve
@@ -357,10 +359,11 @@ var setInternalState = (state) => { //set the internal state of values that need
     //if (values.length > 3) currMax = parseFloat(values[3]); // Deprecated
     if (values.length > 4) savet[0] = parseFloat(values[4]);
     if (values.length > 5) savet[1] = parseFloat(values[5]);
+    if (values.length > 6) pLevel = parseFloat(values[6]);
 }
 
 var getInternalState = () => {
-    return `${t} ${q} ${c} 0 ${savet[0]} ${savet[1]}` //return the data saved 
+    return `${t} ${q} ${c} 0 ${savet[0]} ${savet[1]} ${pLevel}` //return the data saved 
 }
 
 init();
