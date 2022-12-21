@@ -89,8 +89,8 @@ var init = () => {
     // p
     
     {
-        let getDesc = (level) => "\\begin{matrix}p={" + getP(level).toNumber().toFixed(2) + "},&t \\leftarrow t * 0.995 \\end{matrix}";
-        let getInfo = (level) => "\\begin{matrix}p=" + getP(level).toNumber().toFixed(2) + ",&t=" + getTAfterPUpgrade(level).toFixed(1) + "\\end{matrix}";
+        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\\text{, }t \\leftarrow t * 0.995";
+        let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2) + "\\text{, }t=" + getTAfterPUpgrade(level).toFixed(1);
         p = theory.createUpgrade(4, currency, costs[3]);
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
