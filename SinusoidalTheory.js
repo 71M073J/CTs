@@ -296,7 +296,7 @@ var postPublish = () => {
 var getSecondaryEquation = () => {
     
     let result = "\\begin{matrix}";
-    result += theory.latexSymbol + "=(\\max\\rho)^{0.2}";
+    result += theory.latexSymbol + "={\\max|\\rho|}^{0.1}";
     result += ",\\;\\dot c=c_1c_2 \\, dt"
     if(qMilestone.level > 0){
         result += ",\\;\\dot q={q_1" 
@@ -317,9 +317,9 @@ var getTertiaryEquation = () => {
     return result;
 }
 var getPublicationMultiplier = (tau) => tau.pow(1/taupau).pow(0.10) * 5;
-var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol + "^{0.5}";
+var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol;
 var getTau = () => currency.value.abs().pow(taupau);//1 e (log10(currency) / 5)
-var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(5), currency.symbol];
+var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(10), currency.symbol];
 //var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(1/taupau), currency.symbol];
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000;
