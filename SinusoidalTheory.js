@@ -304,7 +304,7 @@ var getSecondaryEquation = () => {
         result += "}/100";
     }
     result += "\\\\\\\\";
-    result += "dt=\\min\\{1,\\log_{10}(c)^{0.75}\\}";
+    result += "dt=\\min\\{1, 10/(\\log^{0.75}_{10}c)\\}";
     result += "\\end{matrix}";
     return result
 }
