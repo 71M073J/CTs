@@ -146,8 +146,27 @@ var init = () => {
         pMilestone = theory.createMilestoneUpgrade(0, 2);
         pMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
-        pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = Math.pow(t, 1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; currency.value = BigNumber.ZERO;updateAvailability();};
-        pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO; updateAvailability();}
+        pMilestone.bought = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            // log(pMilestone.level);
+            // log(savet.toString());
+            savet[pMilestone.level - 1] = t;
+            t = Math.pow(t, 1/Math.sqrt(2));
+            savet[pMilestone.level - 1] = savet[pMilestone.level - 1] - t;
+            currency.value = BigNumber.ZERO;
+            updateAvailability();
+        };
+        pMilestone.refunded = (_) =>
+        {
+            // log(pMilestone.level + 1);
+            // log(savet.toString());
+            theory.invalidatePrimaryEquation();
+            t += savet[pMilestone.level];
+            resetToPIMult();
+            currency.value = BigNumber.ZERO;
+            updateAvailability();
+        }
         pMilestone.isAvailable = true;
         
     }
@@ -235,7 +254,6 @@ var tick = (elapsedTime, multiplier) => {
     let effectiveElapsedTime = elapsedTime * multiplier;
     let dt = getdt();
     //TODO need to account for t resets, there needs to be a penalty for this with large ticks
-    
     let vt0 = BigNumber.from(t);
     t += dt * effectiveElapsedTime;
     let vt1 = BigNumber.from(t);
