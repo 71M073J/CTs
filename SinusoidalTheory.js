@@ -89,8 +89,8 @@ var init = () => {
     // p
     
     {
-        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\,\ t={" + getTAfterPUpgrade(level).toFixed(1) + "}\\\\ (t * 0.995)";
-        let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2) + "\,\ t=" + getTAfterPUpgrade(level).toFixed(1);
+        let getDesc = (level) => "p={" + getP(level).toNumber().toFixed(2) + "}\\text{, }t \\leftarrow t * 0.995";
+        let getInfo = (level) => "p=" + getP(level).toNumber().toFixed(2) + "\\text{, }t=" + getTAfterPUpgrade(level).toFixed(1);
         p = theory.createUpgrade(4, currency, costs[3]);
         p.getDescription = (_) => Utils.getMath(getDesc(p.level));
         p.getInfo = (amount) => Utils.getMathTo(getInfo(p.level), getInfo(p.level + amount));
@@ -146,8 +146,27 @@ var init = () => {
         pMilestone = theory.createMilestoneUpgrade(0, 2);
         pMilestone.description = Localization.getUpgradeMultCustomDesc("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
         pMilestone.info = Localization.getUpgradeMultCustomInfo("p", "\\sqrt{2}") + ", t = $t^{1/\\sqrt(2)}$";
-        pMilestone.bought = (_) => {theory.invalidatePrimaryEquation(); savet[pMilestone.level] = t; t = Math.pow(t, 1/Math.sqrt(2)); savet[pMilestone.level] = savet[pMilestone.level] - t; currency.value = BigNumber.ZERO;updateAvailability();};
-        pMilestone.refunded = (_) => {theory.invalidatePrimaryEquation(); t += savet[pMilestone.level + 1]; resetToPIMult(); currency.value = BigNumber.ZERO; updateAvailability();}
+        pMilestone.bought = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            // log(pMilestone.level);
+            // log(savet.toString());
+            savet[pMilestone.level - 1] = t;
+            t = Math.pow(t, 1/Math.sqrt(2));
+            savet[pMilestone.level - 1] = savet[pMilestone.level - 1] - t;
+            currency.value = BigNumber.ZERO;
+            updateAvailability();
+        };
+        pMilestone.refunded = (_) =>
+        {
+            // log(pMilestone.level + 1);
+            // log(savet.toString());
+            theory.invalidatePrimaryEquation();
+            t += savet[pMilestone.level];
+            resetToPIMult();
+            currency.value = BigNumber.ZERO;
+            updateAvailability();
+        }
         pMilestone.isAvailable = true;
         
     }
@@ -235,7 +254,6 @@ var tick = (elapsedTime, multiplier) => {
     let effectiveElapsedTime = elapsedTime * multiplier;
     let dt = getdt();
     //TODO need to account for t resets, there needs to be a penalty for this with large ticks
-    
     let vt0 = BigNumber.from(t);
     t += dt * effectiveElapsedTime;
     let vt1 = BigNumber.from(t);
@@ -296,7 +314,7 @@ var postPublish = () => {
 var getSecondaryEquation = () => {
     
     let result = "\\begin{matrix}";
-    result += theory.latexSymbol + "=(\\max\\rho)^{0.2}";
+    result += theory.latexSymbol + "={\\max|\\rho|}^{0.1}";
     result += ",\\;\\dot c=c_1c_2 \\, dt"
     if(qMilestone.level > 0){
         result += ",\\;\\dot q={q_1" 
@@ -304,7 +322,7 @@ var getSecondaryEquation = () => {
         result += "}/100";
     }
     result += "\\\\\\\\";
-    result += "dt=\\min\\{1,\\log_{10}(c)^{0.75}\\}";
+    result += "dt=\\min\\{1, 10/(\\log^{0.75}_{10}c)\\}";
     result += "\\end{matrix}";
     return result
 }
@@ -317,9 +335,9 @@ var getTertiaryEquation = () => {
     return result;
 }
 var getPublicationMultiplier = (tau) => tau.pow(1/taupau).pow(0.10) * 5;
-var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol + "^{0.5}";
+var getPublicationMultiplierFormula = (symbol) => "5 \\times " + symbol;
 var getTau = () => currency.value.abs().pow(taupau);//1 e (log10(currency) / 5)
-var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(5), currency.symbol];
+var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(10), currency.symbol];
 //var getCurrencyFromTau = (tau) => [tau.max(BigNumber.ONE).pow(1/taupau), currency.symbol];
 var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.value.abs()).log10().toNumber();
 var getF = (level) => (level * 100)/1000;
